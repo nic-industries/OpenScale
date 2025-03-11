@@ -113,12 +113,7 @@ void system_setup(void)
     //Execute command
     if (command == '1')
     {
-      Serial.print(F("\n\rGetting Tare point: "));
-      scale.tare(); //Reset the scale to 0
-      setting_tare_point = scale.read_average(10); //Get 10 readings from the HX711 and average them
-      Serial.println(setting_tare_point);
-
-      record_system_settings();
+      tare_scale();
     }
     else if (command == '2')
     {
@@ -279,21 +274,38 @@ void system_setup(void)
   }
 }
 
+// places tare functionality into a method
+void tare_scale(void)
+{
+  Serial.print(F("\n\rGetting Tare point: "));
+  scale.tare(); //Reset the scale to 0
+  setting_tare_point = scale.read_average(10); //Get 10 readings from the HX711 and average them
+  Serial.print(F("Tare: "));
+  Serial.println(setting_tare_point);
+
+  record_system_settings();
+}
+
 //Gives user the ability to set a known weight on the scale and calculate a calibration factor
 void calibrate_scale(void)
 {
-  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
-
   Serial.println();
   Serial.println();
   Serial.println(F("Scale calibration"));
-  Serial.println(F("Place known weight on scale. Press a key when weight is in place and stable."));
 
+  Serial.println(F("Remove all non-permanent objects from scale. Press a key and hit enter when all objects have been removed."));
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
   while (Serial.available() == false) ; //Wait for user to press key
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
-  Serial.print(F("Tare: "));
-  Serial.println(setting_tare_point);
+  tare_scale();
+
+  Serial.println(F("Place known weight on scale. Press a key and hit enter when weight is in place and stable."));
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+  while (Serial.available() == false) ; //Wait for user to press key
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
   long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
   Serial.print(F("Raw: "));
@@ -361,6 +373,7 @@ void average_reading_setup(void)
 
   //Get user input
   Serial.print(F("\n\n\rEnter the number of readings to average together (1 to 64): "));
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
   char newSetting[8]; //Max 7 characters
   read_line(newSetting, sizeof(newSetting));
 

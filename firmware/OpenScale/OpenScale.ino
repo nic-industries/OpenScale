@@ -155,11 +155,12 @@ void setup()
 
 void loop()
 {
+  long startTime = millis();
+
   //Print time stamp
   if (setting_timestamp_enable == true)
   {
-    long startTime = millis();
-    Serial.print(F("st,"))
+    Serial.print(F("st,"));
     Serial.print(startTime);
     Serial.print(F(","));
   }
@@ -167,7 +168,7 @@ void loop()
   //Take average of readings with calibration and tare taken into account
   float currentReading = scale.get_units(setting_average_amount);
   //Print calibrated reading
-  Serial.print(F("cw,"))
+  Serial.print(F("cw,"));
   Serial.print(currentReading, setting_decimal_places);
   Serial.print(F(","));
   // if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
@@ -179,7 +180,7 @@ void loop()
   {
     long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
     
-    Serial.print(F("rr"))
+    Serial.print(F("rr"));
     Serial.print(rawReading);
     Serial.print(F(","));
   }
@@ -187,7 +188,7 @@ void loop()
   //Print local temp
   if (setting_local_temp_enable == true)
   {
-    Serial.print(F("lt,"))
+    Serial.print(F("lt,"));
     Serial.print(getLocalTemperature(), setting_decimal_places);
     Serial.print(F(","));
   }
@@ -197,7 +198,7 @@ void loop()
   {
     if (remoteSensorAttached == true)
     {
-      Serial.print(F("rt,"))
+      Serial.print(F("rt,"));
       Serial.print(getRemoteTemperature(), setting_decimal_places);
       Serial.print(F(","));
     }
