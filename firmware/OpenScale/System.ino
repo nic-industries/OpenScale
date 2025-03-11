@@ -311,12 +311,15 @@ byte read_line(char* buffer, byte buffer_length)
 
     Serial.print((char)c); //Echo the user's input
 
-    if (c == '\r') {
+    // allow enter key pressed to be registered as a new line or carriage return
+    // adding this because the menu and values entered behave differently otherwise
+    // for example, I was having to send line feed in the serial monitor on the 
+    // arduino ide to access the openscale menu and its options, but then the entered values
+    // during configurations (such as the calibration steps) need a carriage return and line feed
+    if (c == '\r' || c == '\n') {
       Serial.println();
       buffer[read_length] = '\0';
       break;
-    }
-    else if (c == '\n') {
     }
     else {
       buffer[read_length] = c;

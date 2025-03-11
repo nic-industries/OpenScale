@@ -97,8 +97,11 @@ void system_setup(void)
     Serial.write(setting_trigger_character);
     Serial.println(F("']"));
 
-
     Serial.println(F("x) Exit"));
+
+    // clear buffer just before prompting user for character entry
+    while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
     Serial.print(F(">"));
 
     //Read command
@@ -253,6 +256,7 @@ void system_setup(void)
     }
     else if (command == 'c')
     {
+      while (Serial.available()) Serial.read(); //Clear anything in RX buffer
       Serial.print(F("\n\rEnter new trigger character: "));
 
       while (Serial.available() == false) delay(1);
@@ -269,21 +273,24 @@ void system_setup(void)
     {
       //Do nothing, just exit
       Serial.println(F("Exiting"));
+      while (Serial.available()) Serial.read(); //Clear anything in RX buffer
       return;
     }
-
   }
 }
 
 //Gives user the ability to set a known weight on the scale and calculate a calibration factor
 void calibrate_scale(void)
 {
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
   Serial.println();
   Serial.println();
   Serial.println(F("Scale calibration"));
   Serial.println(F("Place known weight on scale. Press a key when weight is in place and stable."));
 
   while (Serial.available() == false) ; //Wait for user to press key
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
   Serial.print(F("Tare: "));
   Serial.println(setting_tare_point);
@@ -302,6 +309,7 @@ void calibrate_scale(void)
   Serial.print(setting_calibration_factor);
   Serial.println();
 
+  // just in case a button was pressed
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
   Serial.print(F("Please enter the weight currently sitting on the scale: "));
@@ -349,6 +357,8 @@ void calibrate_scale(void)
 //Configure how many readings to average together
 void average_reading_setup(void)
 {
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
   //Get user input
   Serial.print(F("\n\n\rEnter the number of readings to average together (1 to 64): "));
   char newSetting[8]; //Max 7 characters
@@ -374,6 +384,8 @@ void average_reading_setup(void)
 //Configure how many decimals to show
 void decimal_setup(void)
 {
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
   //Get user input
   Serial.print(F("\n\n\rEnter the number of decimals to display (0 to 4): "));
   char newSetting[8]; //Max 7 characters
@@ -403,6 +415,7 @@ void baud_setup(void)
   Serial.print(setting_uart_speed, DEC);
   Serial.println(F(" bps"));
 
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
   Serial.println(F("Enter new baud rate ('x' to abort):"));
 
   //Print prompt
@@ -458,6 +471,8 @@ void rate_setup(void)
   Serial.print(F("Current Time: "));
   Serial.print(setting_report_rate);
   Serial.println(F("ms"));
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
   //Read user input
   Serial.print(F("Enter new time (ms): "));
