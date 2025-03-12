@@ -8,7 +8,7 @@
 //Read the on board TMP102 digital temperature sensor
 //Return celsius
 //Code comes from bildr
-float getLocalTemperature()
+float getLocalTemperatureC()
 {
   Wire.requestFrom(tmp102Address, 2);
 
@@ -22,10 +22,18 @@ float getLocalTemperature()
   return celsius;
 }
 
+//Read the on board TMP102 digital temperature sensor
+//Return fahrenheit
+//Code comes from bildr
+float getLocalTemperatureF()
+{
+  return ((getLocalTemperatureC() * 1.8) + 32);
+}
+
 //Read the remote DS18B20 sensor
 //Return celsius
 //Code comes from PJRC: http://www.pjrc.com/teensy/td_libs_OneWire.html
-float getRemoteTemperature()
+float getRemoteTemperatureC()
 {
   //The DS18S20 is read slightly differently than the DS18B20
   //The sealed sensors that SparkFun sells are DS18B20
@@ -74,4 +82,9 @@ float getRemoteTemperature()
 
   float celsius = (float)raw / 16.0;
   return (celsius);
+}
+
+float getRemoteTemperatureF()
+{
+  return ((getRemoteTemperatureC() * 1.8) + 32);
 }

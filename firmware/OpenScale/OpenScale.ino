@@ -75,7 +75,7 @@ byte setting_units; //Lbs or kg?
 unsigned int setting_report_rate;
 long setting_calibration_factor; //Value used to convert the load cell reading to lbs or kg
 long setting_tare_point; //Zero value that is found when scale is tared
-boolean setting_timestamp_enable; //Prints the number of miliseconds since boot next to weight reading
+uint8_t setting_timestamp_enable; //Prints the number of miliseconds since boot next to weight reading
 byte setting_decimal_places; //How many decimals to display
 byte setting_average_amount; //How many readings to take before reporting reading
 byte setting_local_temp_enable; //Prints the local temperature in C
@@ -137,7 +137,7 @@ void setup()
   scale.set_offset(setting_tare_point);
 
   //Calculate the minimum time between reports
-  int minTime = calcMinimumReadTime();
+  unsigned int minTime = calcMinimumReadTime();
   Serial.print(F("Minimum time between reports: "));
   Serial.println(minTime);
 
@@ -155,7 +155,9 @@ void setup()
 
 void loop()
 {
-  long startTime = millis();
+  Serial.flush();
+
+  unsigned long startTime = millis();
 
   //Print time stamp
   if (setting_timestamp_enable == true)
@@ -166,11 +168,21 @@ void loop()
   }
 
   //Take average of readings with calibration and tare taken into account
-  float currentReading = scale.get_units(setting_average_amount);
+  //float currentReading = scale.get_units(setting_average_amount);
   //Print calibrated reading
-  Serial.print(F("cw,"));
-  Serial.print(currentReading, setting_decimal_places);
-  Serial.print(F(","));
+  char str[20];
+  char str2[14];
+  char str1[] = "cw,";
+  dtostrf(scale.get_units(setting_average_amount), 5, 3, str2);
+  char  str3[] = ",";
+  sprintf(str, "%s%s%s", str1, str2, str3);
+
+  //appendToMessage(str, str2);
+
+  Serial.write(str);
+  // Serial.print(F("cw,"));
+  // Serial.print(currentReading, setting_decimal_places);
+  // Serial.print(F(","));
   // if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
   // if (setting_units == UNITS_KG) Serial.print(F("kg"));
   // Serial.print(F(","));
@@ -188,9 +200,16 @@ void loop()
   //Print local temp
   if (setting_local_temp_enable == true)
   {
-    Serial.print(F("lt,"));
-    Serial.print(getLocalTemperature(), setting_decimal_places);
-    Serial.print(F(","));
+    char str[20];
+    char str2[14];
+    char str1[] = "lt,";
+    dtostrf(getLocalTemperatureF(), 5, 3, str2);
+    char  str3[] = ",";
+    sprintf(str, "%s%s%s", str1, str2, str3);
+    Serial.write(str);
+    // Serial.print(F("lt,"));
+    // Serial.print(getLocalTemperature(), setting_decimal_places);
+    // Serial.print(F(","));
   }
 
   //Print remote temp
@@ -199,7 +218,7 @@ void loop()
     if (remoteSensorAttached == true)
     {
       Serial.print(F("rt,"));
-      Serial.print(getRemoteTemperature(), setting_decimal_places);
+      Serial.print(getRemoteTemperatureF(), setting_decimal_places);
       Serial.print(F(","));
     }
     else
@@ -273,4 +292,19 @@ void loop()
 
     if (setting_status_enable == false) digitalWrite(statusLED, LOW); //Turn off LED
   }
+}
+
+void appendToMessage(char* message, const char* append) {
+  // Find the length of the current string in message
+  int len = strlen(message);
+
+  // Append each character from 'append' to 'message'
+  while (*append != '\0') {
+    message[len] = *append;  // Copy the character
+    len++;                   // Move to the next position in the message
+    append++;                // Move to the next character in the append string
+  }
+
+  // Null-terminate the final string
+  message[len] = '\0';
 }

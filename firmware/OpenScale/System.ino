@@ -170,7 +170,7 @@ void readSystemSettings(void)
 
   //Look up the calibration factor
   setting_calibration_factor = readBytes(LOCATION_CALIBRATION_FACTOR_MSB, sizeof(setting_calibration_factor));
-  if (setting_calibration_factor == 0xFFFFFFFF)
+  if (setting_calibration_factor == 0xFFFFL)
   {
     setting_calibration_factor = 0; //Default to 0
     writeBytes(LOCATION_CALIBRATION_FACTOR_MSB, setting_calibration_factor, sizeof(setting_calibration_factor));
@@ -178,7 +178,7 @@ void readSystemSettings(void)
 
   //Look up the zero tare point
   setting_tare_point = readBytes(LOCATION_TARE_POINT_MSB, sizeof(setting_tare_point));
-  if (setting_tare_point == 0xFFFFFFFF)
+  if (setting_tare_point == 0xFFFFL)
   {
     setting_tare_point = 1000; //Default to 1000 so we don't get inf
     writeBytes(LOCATION_TARE_POINT_MSB, setting_tare_point, sizeof(setting_tare_point));

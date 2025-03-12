@@ -471,7 +471,7 @@ void baud_setup(void)
 void rate_setup(void)
 {
   //Calculate the minimum time between reports
-  int minTime = calcMinimumReadTime();
+  unsigned int minTime = calcMinimumReadTime();
 
   Serial.println(F("\n\n\rSet time between reports"));
 
@@ -492,7 +492,7 @@ void rate_setup(void)
   char newSetting[8]; //Max at 1000000 = 1000 seconds
   read_line(newSetting, sizeof(newSetting));
 
-  int newReportRate = strtolong(newSetting); //Convert this string to an int
+  unsigned int newReportRate = strtolong(newSetting); //Convert this string to an int
 
   //Error check
   if (newReportRate > minTime)
@@ -514,31 +514,31 @@ void rate_setup(void)
 //Takes into account current baud rate
 //Takes into account the time to read various sensors
 //Takes into account raw reading printing
-int calcMinimumReadTime(void)
+unsigned int calcMinimumReadTime(void)
 {
   //The first few reads take too little time
   scale.get_units();
   scale.get_units();
 
   //Establish out much time it takes to do a standard scale read
-  long startTime = millis();
+  unsigned long startTime = millis();
   scale.get_units(setting_average_amount); //Do a dummy read and time it
-  int averageReadTime = ceil((millis() - startTime));
-  int sensorReadTime = averageReadTime;
+  unsigned int averageReadTime = ceil((millis() - startTime));
+  unsigned int sensorReadTime = averageReadTime;
 
   //Assume we will need to print a minimum of 7 characters at this baud rate per loop
   //1 / 9600 = 1ms * 10bits per byte = 9.6ms per byte
   float characterTime = 10000 / (float)setting_uart_speed;
 
   //Calculate number of characters per report
-  int characters = 0;
+  unsigned int characters = 0;
 
   if (setting_timestamp_enable == true) characters += strlen("51588595,"); //Timestamp has characters
 
   if (setting_local_temp_enable)
   {
     //Establish how much time it takes to do a local temp read
-    long startTime = millis();
+    unsigned long startTime = millis();
     for (byte x = 0 ; x < 8 ; x++)
       getLocalTemperature(); //Do a dummy read and time it
     averageReadTime = ceil((millis() - startTime) / (float)8);
@@ -550,7 +550,7 @@ int calcMinimumReadTime(void)
   if (setting_remote_temp_enable)
   {
     //Establish how much time it takes to do a remote temp read
-    long startTime = millis();
+    unsigned long startTime = millis();
     for (byte x = 0 ; x < 8 ; x++)
       getRemoteTemperature(); //Do a dummy read and time it
     averageReadTime = ceil((millis() - startTime) / (float)8);
@@ -568,10 +568,8 @@ int calcMinimumReadTime(void)
 
   if (setting_raw_reading_enable == true)
   {
-    long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
-
     //Establish how much time it takes to do a raw read
-    long startTime = millis();
+    unsigned long startTime = millis();
     scale.read_average(setting_average_amount); //Do a dummy read and time it
     averageReadTime = ceil((millis() - startTime));
     sensorReadTime += averageReadTime; //In ms
@@ -583,5 +581,5 @@ int calcMinimumReadTime(void)
   //Serial.println(ceil((float)characters * characterTime));
 
   //Combine the total amount of sensor read time with the time it takes to print all the characters
-  return (sensorReadTime + ceil((float)characters * characterTime));
+  return (unsigned int)(sensorReadTime + ceil((float)characters * characterTime));
 }
