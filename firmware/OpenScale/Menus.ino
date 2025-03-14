@@ -2,8 +2,7 @@
   Lots of serial menus and visual stuff so user can configure the OpenScale
 */
 
-#define USING_USB
-#define USING_TTL
+#include "globals.h"
 
 //We use this at startup and for the configuration menu
 //Saves us a few dozen bytes
@@ -279,21 +278,163 @@ void system_setup(void)
     }
   }
 }
-#elif USING_TTL
+#else
 void system_setup(void)
 {
-  // clear buffer just before prompting user for character entry
-  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+  char command = ClearAndReadChar(0);
 
-  //Read command
-  while (!Serial.available()) ; //Wait for user to type a character
-  char command = Serial.read();
-
-  
+  if (command == '1')
+  {
+    ClearAndSendHandshakeChar();
+    tare_scale();
+    ClearAndSendDoneChar();
+  }
+  else if (command == '2')
+  {
+    ClearAndSendHandshakeChar();
+    calibrate_scale();
+    ClearAndSendDoneChar();
+  }
+  else if (command == '3')
+  {
+    ClearAndSendHandshakeChar();
+    if (setting_timestamp_enable == true)
+    {
+      setting_timestamp_enable = false;
+    }
+    else
+    {
+      setting_timestamp_enable = true;
+    }
+    ClearAndSendDoneChar();
+  }
+  else if (command == '4')
+  {
+    ClearAndSendHandshakeChar();
+    rate_setup();
+    ClearAndSendDoneChar();
+  }
+  else if (command == '5')
+  {
+    ClearAndSendHandshakeChar();
+    baud_setup();
+    ClearAndSendDoneChar();
+  }
+  else if (command == '6')
+  {
+    ClearAndSendHandshakeChar();
+    if (setting_units == UNITS_KG)
+    {
+      setting_units = UNITS_LBS;
+      float newFactor = (float)setting_calibration_factor * 0.453592; //Convert the calibration factor from kg to lbs
+      setting_calibration_factor = (long)newFactor;
+    }
+    else if (setting_units == UNITS_LBS)
+    {
+      setting_units = UNITS_KG;
+      float newFactor = (float)setting_calibration_factor * 2.20462; //Convert the calibration factor from lbs to kg
+      setting_calibration_factor = (long)newFactor;
+    }
+    scale.set_scale(setting_calibration_factor); //Assign this new factor to the scale
+    ClearAndSendDoneChar();
+  }
+  else if (command == '7')
+  {
+    ClearAndSendHandshakeChar();
+    decimal_setup();
+    ClearAndSendDoneChar();
+  }
+  else if (command == '8')
+  {
+    ClearAndSendHandshakeChar();
+    average_reading_setup();
+    ClearAndSendDoneChar();
+  }
+  else if (command == '9')
+  {
+    ClearAndSendHandshakeChar();
+    if (setting_local_temp_enable == true)
+    {
+      setting_local_temp_enable = false;
+    }
+    else
+    {
+      setting_local_temp_enable = true;
+    }
+    ClearAndSendDoneChar();
+  }
+  else if (command == 'r')
+  {
+    ClearAndSendHandshakeChar();
+    if (setting_remote_temp_enable == true)
+    {
+      setting_remote_temp_enable = false;
+    }
+    else
+    {
+      setting_remote_temp_enable = true;
+    }
+    ClearAndSendDoneChar();
+  }
+  else if (command == 's')
+  {
+    ClearAndSendHandshakeChar();
+    if (setting_status_enable == true)
+    {
+      setting_status_enable = false;
+      digitalWrite(statusLED, LOW); //Turn off the LED
+    }
+    else
+    {
+      setting_status_enable = true;
+    }
+    ClearAndSendDoneChar();
+  }
+  else if (command == 't')
+  {
+    ClearAndSendHandshakeChar();
+    if (setting_serial_trigger_enable == true)
+    {
+      setting_serial_trigger_enable = false;
+    }
+    else
+    {
+      setting_serial_trigger_enable = true;
+    }
+    ClearAndSendDoneChar();
+  }
+  else if (command == 'q')
+  {
+    ClearAndSendHandshakeChar();
+    if (setting_raw_reading_enable == true)
+    {
+      setting_raw_reading_enable = false;
+    }
+    else
+    {
+      setting_raw_reading_enable = true;
+    }
+    ClearAndSendDoneChar();
+  }
+  else if (command == 'c')
+  {
+    ClearAndSendHandshakeChar();
+    setting_trigger_character = ClearAndReadChar(1);
+    ClearAndSendDoneChar();
+  }
+  else if (command == 'x')
+  {
+    ClearAndSendHandshakeChar();
+    //Do nothing, just exit
+    ClearRxBuffer();
+    record_system_settings();
+    ClearAndSendDoneChar();
+  }
 }
 #endif
 
 // places tare functionality into a method
+#ifdef USING_USB
 void tare_scale(void)
 {
   Serial.print(F("\n\rGetting Tare point: "));
@@ -304,8 +445,18 @@ void tare_scale(void)
 
   record_system_settings();
 }
+#else
+void tare_scale(void)
+{
+  scale.tare(); //Reset the scale to 0
+  setting_tare_point = scale.read_average(10); //Get 10 readings from the HX711 and average them
+
+  record_system_settings();
+}
+#endif
 
 //Gives user the ability to set a known weight on the scale and calculate a calibration factor
+#ifdef USING_USB
 void calibrate_scale(void)
 {
   Serial.println();
@@ -384,6 +535,50 @@ void calibrate_scale(void)
   if (setting_units == UNITS_KG) Serial.print(F("kg"));
   Serial.println();
 }
+#else
+void calibrate_scale(void)
+{
+  ClearAndSendHandshakeCar();
+  char nextChar = ClearAndReadChar(0);
+
+
+
+  tare_scale();
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+  while (Serial.available() == false) ; //Wait for user to press key
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
+  long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
+
+  // just in case a button was pressed
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
+  //Read user input
+  char newSetting[15]; //Max 15 characters: "12.5765" = 8 characters (includes trailing /0)
+  read_line(newSetting, sizeof(newSetting));
+
+  float weightOnScale = atof(newSetting); //Convert this string to a float
+
+  //Convert this weight to a calibration factor
+
+  //tare: 210193
+  //raw: 246177
+  //User Input: 0.5276 kg
+  //avg: 4 times
+
+  //get_units = (raw-OFFSET) / calibration_factor
+  //0.5276 = (246177-210193) / cal_factor
+  //114185 / .45 = 256744
+
+  setting_calibration_factor = (rawReading - setting_tare_point) / weightOnScale;
+
+  scale.set_scale(setting_calibration_factor); //Go to this new cal factor
+
+  //Record this new value to EEPROM
+  record_system_settings();
+}
+#endif
 
 //Configure how many readings to average together
 void average_reading_setup(void)

@@ -66,6 +66,8 @@
 #include <avr/sleep.h> //Needed for sleep_mode
 #include <avr/power.h> //Needed for powering down perihperals such as the ADC/TWI and Timers
 
+#include "globals.h"
+
 #define FIRMWARE_VERSION "1.2"
 
 //Global variables
@@ -129,7 +131,10 @@ void setup()
 
   //Setup UART
   Serial.begin(setting_uart_speed);
+  
+  #ifdef USING_USB
   displaySystemHeader(); //Product title and firmware version
+  #endif
 
   checkEmergencyReset(); //Look to see if the RX pin is being pulled low
 
