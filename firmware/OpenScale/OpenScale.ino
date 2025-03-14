@@ -168,21 +168,18 @@ void loop()
   }
 
   //Take average of readings with calibration and tare taken into account
-  //float currentReading = scale.get_units(setting_average_amount);
+  float currentReading = scale.get_units(setting_average_amount);
+
   //Print calibrated reading
-  char str[20];
+  char str[20] = "cw,";
   char str2[14];
-  char str1[] = "cw,";
-  dtostrf(scale.get_units(setting_average_amount), 5, 3, str2);
-  char  str3[] = ",";
-  sprintf(str, "%s%s%s", str1, str2, str3);
-
-  //appendToMessage(str, str2);
-
+  CreateMessage(str, dtostrf(currentReading, (setting_decimal_places + 2), setting_decimal_places, str2));
   Serial.write(str);
+
   // Serial.print(F("cw,"));
   // Serial.print(currentReading, setting_decimal_places);
   // Serial.print(F(","));
+
   // if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
   // if (setting_units == UNITS_KG) Serial.print(F("kg"));
   // Serial.print(F(","));
@@ -200,12 +197,9 @@ void loop()
   //Print local temp
   if (setting_local_temp_enable == true)
   {
-    char str[20];
+    char str[20] = "lt,";
     char str2[14];
-    char str1[] = "lt,";
-    dtostrf(getLocalTemperatureF(), 5, 3, str2);
-    char  str3[] = ",";
-    sprintf(str, "%s%s%s", str1, str2, str3);
+    CreateMessage(str, dtostrf(getLocalTemperatureF(), 5, 3, str2));
     Serial.write(str);
     // Serial.print(F("lt,"));
     // Serial.print(getLocalTemperature(), setting_decimal_places);
@@ -294,7 +288,7 @@ void loop()
   }
 }
 
-void appendToMessage(char* message, const char* append) {
+void CreateMessage(char* message, const char* append) {
   // Find the length of the current string in message
   int len = strlen(message);
 
@@ -305,6 +299,7 @@ void appendToMessage(char* message, const char* append) {
     append++;                // Move to the next character in the append string
   }
 
+  message[len] = ',';
   // Null-terminate the final string
-  message[len] = '\0';
+  message[len + 1] = '\0';
 }

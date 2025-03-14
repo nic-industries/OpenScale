@@ -2,8 +2,12 @@
   Lots of serial menus and visual stuff so user can configure the OpenScale
 */
 
+#define USING_USB
+#define USING_TTL
+
 //We use this at startup and for the configuration menu
 //Saves us a few dozen bytes
+#ifdef USING_USB
 void displaySystemHeader(void)
 {
   Serial.print(F("\r\nSerial Load Cell Converter version "));
@@ -22,8 +26,10 @@ void displaySystemHeader(void)
     Serial.println(F("Remote temperature sensor detected"));
   }
 }
+#endif
 
 //Configure how OpenScale operates
+#ifdef USING_USB
 void system_setup(void)
 {
   while (1)
@@ -273,6 +279,19 @@ void system_setup(void)
     }
   }
 }
+#elif USING_TTL
+void system_setup(void)
+{
+  // clear buffer just before prompting user for character entry
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
+  //Read command
+  while (!Serial.available()) ; //Wait for user to type a character
+  char command = Serial.read();
+
+  
+}
+#endif
 
 // places tare functionality into a method
 void tare_scale(void)
@@ -489,6 +508,7 @@ void rate_setup(void)
 
   //Read user input
   Serial.print(F("Enter new time (ms): "));
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
   char newSetting[8]; //Max at 1000000 = 1000 seconds
   read_line(newSetting, sizeof(newSetting));
 
@@ -528,7 +548,8 @@ unsigned int calcMinimumReadTime(void)
 
   //Assume we will need to print a minimum of 7 characters at this baud rate per loop
   //1 / 9600 = 1ms * 10bits per byte = 9.6ms per byte
-  float characterTime = 10000 / (float)setting_uart_speed;
+  float characterTime = 1 / (float)setting_uart_speed;
+  Serial.println(characterTime);
 
   //Calculate number of characters per report
   unsigned int characters = 0;
@@ -540,7 +561,7 @@ unsigned int calcMinimumReadTime(void)
     //Establish how much time it takes to do a local temp read
     unsigned long startTime = millis();
     for (byte x = 0 ; x < 8 ; x++)
-      getLocalTemperature(); //Do a dummy read and time it
+      getLocalTemperatureF(); //Do a dummy read and time it
     averageReadTime = ceil((millis() - startTime) / (float)8);
     sensorReadTime += averageReadTime; //In ms
 
@@ -552,7 +573,7 @@ unsigned int calcMinimumReadTime(void)
     //Establish how much time it takes to do a remote temp read
     unsigned long startTime = millis();
     for (byte x = 0 ; x < 8 ; x++)
-      getRemoteTemperature(); //Do a dummy read and time it
+      getRemoteTemperatureF(); //Do a dummy read and time it
     averageReadTime = ceil((millis() - startTime) / (float)8);
     sensorReadTime += averageReadTime; //In ms
 
@@ -563,8 +584,8 @@ unsigned int calcMinimumReadTime(void)
 
   if (setting_decimal_places > 0) characters += setting_decimal_places + 1; //For example 4: 3 decimal places and the '.'
 
-  if (setting_units == UNITS_LBS) characters += strlen("lbs");
-  if (setting_units == UNITS_KG) characters += strlen("kg");
+  // if (setting_units == UNITS_LBS) characters += strlen("lbs");
+  // if (setting_units == UNITS_KG) characters += strlen("kg");
 
   if (setting_raw_reading_enable == true)
   {
@@ -581,5 +602,7 @@ unsigned int calcMinimumReadTime(void)
   //Serial.println(ceil((float)characters * characterTime));
 
   //Combine the total amount of sensor read time with the time it takes to print all the characters
+  Serial.println(characters);
+  Serial.println(sensorReadTime);
   return (unsigned int)(sensorReadTime + ceil((float)characters * characterTime));
 }
