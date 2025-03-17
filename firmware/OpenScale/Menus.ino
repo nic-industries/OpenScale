@@ -7,7 +7,7 @@
 //We use this at startup and for the configuration menu
 //Saves us a few dozen bytes
 #ifdef USING_USB
-void displaySystemHeader(void)
+void DisplaySystemHeader(void)
 {
   Serial.print(F("\r\nSerial Load Cell Converter version "));
   Serial.println(F(FIRMWARE_VERSION));
@@ -29,11 +29,11 @@ void displaySystemHeader(void)
 
 //Configure how OpenScale operates
 #ifdef USING_USB
-void system_setup(void)
+void SystemSetup(void)
 {
   while (1)
   {
-    displaySystemHeader(); //Product title and firmware version
+    DisplaySystemHeader(); //Product title and firmware version
 
     Serial.println(F("System Configuration"));
 
@@ -105,7 +105,7 @@ void system_setup(void)
     Serial.println(F("x) Exit"));
 
     // clear buffer just before prompting user for character entry
-    while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+    ClearRxBuffer();
 
     Serial.print(F(">"));
 
@@ -118,145 +118,66 @@ void system_setup(void)
     //Execute command
     if (command == '1')
     {
-      tare_scale();
+      TareScale();
     }
     else if (command == '2')
     {
-      calibrate_scale();
+      CalibrateScale();
     }
     else if (command == '3')
     {
-      Serial.print(F("\n\rTimestamp o"));
-      if (setting_timestamp_enable == true)
-      {
-        Serial.println(F("ff"));
-        setting_timestamp_enable = false;
-      }
-      else
-      {
-        Serial.println(F("n"));
-        setting_timestamp_enable = true;
-      }
-      record_system_settings();
+      Serial.print(F("\n\rToggling Timestamp..."));
+      ToggleTimestamp();
     }
     else if (command == '4')
     {
-      rate_setup();
+      RateSetup();
     }
     else if (command == '5')
     {
-      baud_setup();
+      BaudSetup();
     }
     else if (command == '6')
     {
-      Serial.print(F("\n\rUnits set to "));
-      if (setting_units == UNITS_KG)
-      {
-        Serial.println(F("lbs"));
-        setting_units = UNITS_LBS;
-        float newFactor = (float)setting_calibration_factor * 0.453592; //Convert the calibration factor from kg to lbs
-        setting_calibration_factor = (long)newFactor;
-      }
-      else if (setting_units == UNITS_LBS)
-      {
-        Serial.println(F("kg"));
-        setting_units = UNITS_KG;
-        float newFactor = (float)setting_calibration_factor * 2.20462; //Convert the calibration factor from lbs to kg
-        setting_calibration_factor = (long)newFactor;
-      }
-
-      scale.set_scale(setting_calibration_factor); //Assign this new factor to the scale
-      record_system_settings();
-
+      Serial.print(F("\n\rToggling Units..."));
+      ToggleUnits();
     }
     else if (command == '7')
     {
-      decimal_setup();
+      DecmialSetup();
     }
     else if (command == '8')
     {
-      average_reading_setup();
+      AverageReadingSetup();
     }
     else if (command == '9')
     {
-      Serial.print(F("\n\rLocal temp o"));
-      if (setting_local_temp_enable == true)
-      {
-        Serial.println(F("ff"));
-        setting_local_temp_enable = false;
-      }
-      else
-      {
-        Serial.println(F("n"));
-        setting_local_temp_enable = true;
-      }
-      record_system_settings();
+      Serial.print(F("\n\rToggling Local Temp..."));
+      ToggleLocalTemp();
     }
     else if (command == 'r')
     {
-      Serial.print(F("\n\rRemote temp o"));
-      if (setting_remote_temp_enable == true)
-      {
-        Serial.println(F("ff"));
-        setting_remote_temp_enable = false;
-      }
-      else
-      {
-        Serial.println(F("n"));
-        setting_remote_temp_enable = true;
-      }
-      record_system_settings();
+      Serial.print(F("\n\rToggling Remote Temp..."));
+      ToggleRemoteTemp();
     }
-
     else if (command == 's')
     {
-      Serial.print(F("\n\rStatus LED o"));
-      if (setting_status_enable == true)
-      {
-        Serial.println(F("ff"));
-        setting_status_enable = false;
-        digitalWrite(statusLED, LOW); //Turn off the LED
-      }
-      else
-      {
-        Serial.println(F("n"));
-        setting_status_enable = true;
-      }
-      record_system_settings();
+      Serial.print(F("\n\rToggling Status LED..."));
+      ToggleStatusLED();
     }
     else if (command == 't')
     {
-      Serial.print(F("\n\rSerial trigger o"));
-      if (setting_serial_trigger_enable == true)
-      {
-        Serial.println(F("ff"));
-        setting_serial_trigger_enable = false;
-      }
-      else
-      {
-        Serial.println(F("n"));
-        setting_serial_trigger_enable = true;
-      }
-      record_system_settings();
+      Serial.print(F("\n\rToggling Serial Trigger..."));
+      ToggleSerialTrigger();
     }
     else if (command == 'q')
     {
-      Serial.print(F("\n\rRaw reading o"));
-      if (setting_raw_reading_enable == true)
-      {
-        Serial.println(F("ff"));
-        setting_raw_reading_enable = false;
-      }
-      else
-      {
-        Serial.println(F("n"));
-        setting_raw_reading_enable = true;
-      }
-      record_system_settings();
+      Serial.print(F("\n\rToggling Raw Reading..."));
+      ToggleRawReading();
     }
     else if (command == 'c')
     {
-      while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+      ClearRxBuffer();
       Serial.print(F("\n\rEnter new trigger character: "));
 
       while (Serial.available() == false) delay(1);
@@ -266,168 +187,111 @@ void system_setup(void)
       Serial.println();
       Serial.print(F("\n\rNew character: "));
       Serial.print(setting_trigger_character);
-
-      record_system_settings();
     }
     else if (command == 'x')
     {
       //Do nothing, just exit
       Serial.println(F("Exiting"));
-      while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+      ClearRxBuffer();
+      RecordSystemSettings();
       return;
     }
   }
 }
 #else
-void system_setup(void)
+void SystemSetup(void)
 {
+  ClearAndSendHandshakeChar();
   char command = ClearAndReadChar(0);
 
   if (command == '1')
   {
     ClearAndSendHandshakeChar();
-    tare_scale();
+    TareScale(0);
     ClearAndSendDoneChar();
   }
   else if (command == '2')
   {
     ClearAndSendHandshakeChar();
-    calibrate_scale();
+    CalibrateScale();
     ClearAndSendDoneChar();
   }
   else if (command == '3')
   {
     ClearAndSendHandshakeChar();
-    if (setting_timestamp_enable == true)
-    {
-      setting_timestamp_enable = false;
-    }
-    else
-    {
-      setting_timestamp_enable = true;
-    }
+    ToggleTimestamp();
     ClearAndSendDoneChar();
   }
   else if (command == '4')
   {
     ClearAndSendHandshakeChar();
-    rate_setup();
+    RateSetup();
     ClearAndSendDoneChar();
   }
   else if (command == '5')
   {
     ClearAndSendHandshakeChar();
-    baud_setup();
+    BaudSetup();
     ClearAndSendDoneChar();
   }
   else if (command == '6')
   {
     ClearAndSendHandshakeChar();
-    if (setting_units == UNITS_KG)
-    {
-      setting_units = UNITS_LBS;
-      float newFactor = (float)setting_calibration_factor * 0.453592; //Convert the calibration factor from kg to lbs
-      setting_calibration_factor = (long)newFactor;
-    }
-    else if (setting_units == UNITS_LBS)
-    {
-      setting_units = UNITS_KG;
-      float newFactor = (float)setting_calibration_factor * 2.20462; //Convert the calibration factor from lbs to kg
-      setting_calibration_factor = (long)newFactor;
-    }
-    scale.set_scale(setting_calibration_factor); //Assign this new factor to the scale
+    ToggleUnits();
     ClearAndSendDoneChar();
   }
   else if (command == '7')
   {
     ClearAndSendHandshakeChar();
-    decimal_setup();
+    DecmialSetup();
     ClearAndSendDoneChar();
   }
   else if (command == '8')
   {
     ClearAndSendHandshakeChar();
-    average_reading_setup();
+    AverageReadingSetup();
     ClearAndSendDoneChar();
   }
   else if (command == '9')
   {
     ClearAndSendHandshakeChar();
-    if (setting_local_temp_enable == true)
-    {
-      setting_local_temp_enable = false;
-    }
-    else
-    {
-      setting_local_temp_enable = true;
-    }
+    ToggleLocalTemp();
     ClearAndSendDoneChar();
   }
   else if (command == 'r')
   {
     ClearAndSendHandshakeChar();
-    if (setting_remote_temp_enable == true)
-    {
-      setting_remote_temp_enable = false;
-    }
-    else
-    {
-      setting_remote_temp_enable = true;
-    }
+    ToggleRemoteTemp();
     ClearAndSendDoneChar();
   }
   else if (command == 's')
   {
     ClearAndSendHandshakeChar();
-    if (setting_status_enable == true)
-    {
-      setting_status_enable = false;
-      digitalWrite(statusLED, LOW); //Turn off the LED
-    }
-    else
-    {
-      setting_status_enable = true;
-    }
+    ToggleStatusLED();
     ClearAndSendDoneChar();
   }
   else if (command == 't')
   {
     ClearAndSendHandshakeChar();
-    if (setting_serial_trigger_enable == true)
-    {
-      setting_serial_trigger_enable = false;
-    }
-    else
-    {
-      setting_serial_trigger_enable = true;
-    }
+    ToggleSerialTrigger();
     ClearAndSendDoneChar();
   }
   else if (command == 'q')
   {
     ClearAndSendHandshakeChar();
-    if (setting_raw_reading_enable == true)
-    {
-      setting_raw_reading_enable = false;
-    }
-    else
-    {
-      setting_raw_reading_enable = true;
-    }
+    ToggleRawReading();
     ClearAndSendDoneChar();
   }
   else if (command == 'c')
   {
-    ClearAndSendHandshakeChar();
-    setting_trigger_character = ClearAndReadChar(1);
-    ClearAndSendDoneChar();
+    SetSerialTrigger();
   }
   else if (command == 'x')
   {
     ClearAndSendHandshakeChar();
     //Do nothing, just exit
     ClearRxBuffer();
-    record_system_settings();
+    RecordSystemSettings();
     ClearAndSendDoneChar();
   }
 }
@@ -435,29 +299,35 @@ void system_setup(void)
 
 // places tare functionality into a method
 #ifdef USING_USB
-void tare_scale(void)
+void TareScale(void)
 {
   Serial.print(F("\n\rGetting Tare point: "));
   scale.tare(); //Reset the scale to 0
   setting_tare_point = scale.read_average(10); //Get 10 readings from the HX711 and average them
   Serial.print(F("Tare: "));
   Serial.println(setting_tare_point);
-
-  record_system_settings();
 }
 #else
-void tare_scale(void)
+void TareScale(bool calibrating)
 {
+  if (!calibrating)
+  {
+    ClearAndSendHandshakeCar();
+  }
+  
   scale.tare(); //Reset the scale to 0
   setting_tare_point = scale.read_average(10); //Get 10 readings from the HX711 and average them
 
-  record_system_settings();
+  if (!calibrating)
+  {
+    ClearAndSendDoneChar();
+  }
 }
 #endif
 
 //Gives user the ability to set a known weight on the scale and calculate a calibration factor
 #ifdef USING_USB
-void calibrate_scale(void)
+void CalibrateScale(void)
 {
   Serial.println();
   Serial.println();
@@ -469,7 +339,7 @@ void calibrate_scale(void)
   while (Serial.available() == false) ; //Wait for user to press key
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
-  tare_scale();
+  TareScale();
 
   Serial.println(F("Place known weight on scale. Press a key and hit enter when weight is in place and stable."));
 
@@ -525,9 +395,6 @@ void calibrate_scale(void)
 
   scale.set_scale(setting_calibration_factor); //Go to this new cal factor
 
-  //Record this new value to EEPROM
-  record_system_settings();
-
   Serial.print(F("New Scale Reading: "));
   Serial.print(scale.get_units(setting_average_amount), 4); //Show 4 decimals during calibration
   Serial.print(F(" "));
@@ -536,107 +403,108 @@ void calibrate_scale(void)
   Serial.println();
 }
 #else
-void calibrate_scale(void)
+void CalibrateScale(void)
 {
   ClearAndSendHandshakeCar();
-  char nextChar = ClearAndReadChar(0);
-
-
-
-  tare_scale();
-
-  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
-  while (Serial.available() == false) ; //Wait for user to press key
-  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
-
+  char nextChar = ClearAndReadChar(0);  //user indicating scale is ready for tare
+  TareScale(1);
+  ClearAndSendHandshakeChar(); 
+  char nextChar = ClearAndReadChar(0);  //user indicating calibration weight is on scale
   long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
+  ClearAndSendHandshakeChar(); 
 
-  // just in case a button was pressed
-  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
-
-  //Read user input
-  char newSetting[15]; //Max 15 characters: "12.5765" = 8 characters (includes trailing /0)
-  read_line(newSetting, sizeof(newSetting));
-
-  float weightOnScale = atof(newSetting); //Convert this string to a float
+  float weightOnScale = atof(ClearAndReadLine(15)); //Convert this string to a float
 
   //Convert this weight to a calibration factor
-
-  //tare: 210193
-  //raw: 246177
-  //User Input: 0.5276 kg
-  //avg: 4 times
-
-  //get_units = (raw-OFFSET) / calibration_factor
-  //0.5276 = (246177-210193) / cal_factor
-  //114185 / .45 = 256744
-
   setting_calibration_factor = (rawReading - setting_tare_point) / weightOnScale;
 
   scale.set_scale(setting_calibration_factor); //Go to this new cal factor
 
-  //Record this new value to EEPROM
-  record_system_settings();
+  ClearAndSendDoneChar();
 }
 #endif
 
-//Configure how many readings to average together
-void average_reading_setup(void)
+void ToggleTimestamp(void)
 {
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  if (setting_timestamp_enable == true)
+  {
+    setting_timestamp_enable = false;
+  }
+  else
+  {
+    setting_timestamp_enable = true;
+  }
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+#ifdef USING_USB
+//Allow user to input the time between readings
+void RateSetup(void)
+{
+  //Calculate the minimum time between reports
+  unsigned int minTime = CalcMinReadTime();
+
+  Serial.println(F("\n\n\rSet time between reports"));
+
+  Serial.print(F("Minimum: "));
+  Serial.print(minTime);
+  Serial.println(F("ms"));
+
+  if (setting_report_rate < minTime) setting_report_rate = minTime;
+
+  Serial.print(F("Current Time: "));
+  Serial.print(setting_report_rate);
+  Serial.println(F("ms"));
+
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
-  //Get user input
-  Serial.print(F("\n\n\rEnter the number of readings to average together (1 to 64): "));
+  //Read user input
+  Serial.print(F("Enter new time (ms): "));
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
-  char newSetting[8]; //Max 7 characters
+  char newSetting[8]; //Max at 1000000 = 1000 seconds
   read_line(newSetting, sizeof(newSetting));
 
-  int newAverageAmount = strtolong(newSetting); //Convert this string to an int
+  unsigned int newReportRate = strtolong(newSetting); //Convert this string to an int
 
   //Error check
-  if (newAverageAmount >= 1 && newAverageAmount <= 64)
+  if (newReportRate > minTime)
   {
-    setting_average_amount = newAverageAmount;
+    setting_report_rate = newReportRate; //Go to this new time
 
     //Record this new value to EEPROM
-    record_system_settings();
+    RecordSystemSettings();
 
-    Serial.print(F("Average amount: "));
-    Serial.println(setting_average_amount);
+    Serial.print(F("Time between reports now: "));
+    Serial.print(setting_report_rate);
+    Serial.println(F("ms"));
   }
   else
     Serial.println(F("Error: Out of bounds"));
 }
-
-//Configure how many decimals to show
-void decimal_setup(void)
+#else
+void RateSetup(void)
 {
-  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+  ClearAndSendHandshakeChar();
 
-  //Get user input
-  Serial.print(F("\n\n\rEnter the number of decimals to display (0 to 4): "));
-  char newSetting[8]; //Max 7 characters
-  read_line(newSetting, sizeof(newSetting));
+  //Calculate the minimum time between reports
+  unsigned int minTime = CalcMinReadTime();
 
-  int newDecimalPlaces = strtolong(newSetting); //Convert this string to an int
+  setting_report_rate = minTime + 1;
 
-  //Error check
-  if (newDecimalPlaces >= 0 && newDecimalPlaces <= 4)
-  {
-    setting_decimal_places = newDecimalPlaces;
-
-    //Record this new value to EEPROM
-    record_system_settings();
-
-    Serial.print(F("Decimal places: "));
-    Serial.println(setting_decimal_places);
-  }
-  else
-    Serial.println(F("Error: Out of bounds"));
+  ClearAndSendDoneChar();
 }
+#endif
 
+#ifdef USING_USB
 //Configure what baud rate to communicate at
-void baud_setup(void)
+void BaudSetup(void)
 {
   Serial.print(F("\n\n\rCurrent rate: "));
   Serial.print(setting_uart_speed, DEC);
@@ -673,63 +541,267 @@ void baud_setup(void)
 
     //Record this new baud rate
     setting_uart_speed = newRate;
-    record_system_settings();
+    RecordSystemSettings();
 
     //Go to this speed
     Serial.end();
     Serial.begin(setting_uart_speed);
   }
 }
-
-//Allow user to input the time between readings
-void rate_setup(void)
+#else
+void BaudSetup(void)
 {
-  //Calculate the minimum time between reports
-  unsigned int minTime = calcMinimumReadTime();
+  ClearAndSendHandshakeChar();
 
-  Serial.println(F("\n\n\rSet time between reports"));
+  long newRate = strtolong(ClearAndReadLine(8)); //Convert this string to a long
 
-  Serial.print(F("Minimum: "));
-  Serial.print(minTime);
-  Serial.println(F("ms"));
+  if (newRate < BAUD_MIN)
+  {
+    newRate = 9600;
+  }
+  else if (newRate > BAUD_MAX)
+  {
+    newRate = 115200;
+  }
 
-  if (setting_report_rate < minTime) setting_report_rate = minTime;
+  //Record this new baud rate
+  setting_uart_speed = newRate;
+  //Go to this speed
+  Serial.end();
+  Serial.begin(setting_uart_speed);
 
-  Serial.print(F("Current Time: "));
-  Serial.print(setting_report_rate);
-  Serial.println(F("ms"));
+  ClearAndSendDoneChar();
+}
+#endif
 
+void ToggleUnits(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  if (setting_units == UNITS_KG)
+  {
+    setting_units = UNITS_LBS;
+    float newFactor = (float)setting_calibration_factor * 0.453592; //Convert the calibration factor from kg to lbs
+    setting_calibration_factor = (long)newFactor;
+  }
+  else if (setting_units == UNITS_LBS)
+  {
+    setting_units = UNITS_KG;
+    float newFactor = (float)setting_calibration_factor * 2.20462; //Convert the calibration factor from lbs to kg
+    setting_calibration_factor = (long)newFactor;
+  }
+  scale.set_scale(setting_calibration_factor); //Assign this new factor to the scale
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+#ifdef USING_USB
+//Configure how many decimals to show
+void DecmialSetup(void)
+{
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
-  //Read user input
-  Serial.print(F("Enter new time (ms): "));
-  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
-  char newSetting[8]; //Max at 1000000 = 1000 seconds
+  //Get user input
+  Serial.print(F("\n\n\rEnter the number of decimals to display (0 to 4): "));
+  char newSetting[8]; //Max 7 characters
   read_line(newSetting, sizeof(newSetting));
 
-  unsigned int newReportRate = strtolong(newSetting); //Convert this string to an int
+  int newDecimalPlaces = strtolong(newSetting); //Convert this string to an int
 
   //Error check
-  if (newReportRate > minTime)
+  if (newDecimalPlaces >= 0 && newDecimalPlaces <= 4)
   {
-    setting_report_rate = newReportRate; //Go to this new time
+    setting_decimal_places = newDecimalPlaces;
 
     //Record this new value to EEPROM
-    record_system_settings();
+    RecordSystemSettings();
 
-    Serial.print(F("Time between reports now: "));
-    Serial.print(setting_report_rate);
-    Serial.println(F("ms"));
+    Serial.print(F("Decimal places: "));
+    Serial.println(setting_decimal_places);
   }
   else
     Serial.println(F("Error: Out of bounds"));
+}
+#else
+void DecmialSetup(void)
+{
+  ClearAndSendHandshakeChar();
+
+  int newDecimalPlaces = strtolong(ClearAndReadLine(8)); //Convert this string to an int
+
+  if (newDecimalPlaces < 0)
+  {
+    newDecimalPlaces = 0;
+  }
+  else if (newDecimalPlaces > 4)
+  {
+    newDecimalPlace = 4
+  }
+
+  setting_decimal_places = newDecimalPlaces;
+}
+#endif
+  
+//Configure how many readings to average together
+void AverageReadingSetup(void)
+{
+  //Get user input
+  #ifdef USING_USB
+  Serial.print(F("\n\n\rEnter the number of readings to average together (1 to 64): "));
+  #endif
+
+  int newAverageAmount = strtolong(ClearAndReadLine(8)); //Convert this string to an int
+
+  if (newAverageAmount < 1)
+  {
+    newAverageAmount = 1;
+  }
+  else if (newAverageAmount > 64)
+  {
+    newAverageAmount = 64;
+  }
+
+  setting_average_amount = newAverageAmount;
+}
+
+void ToggleLocalTemp(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  if (setting_local_temp_enable == true)
+  {
+    setting_local_temp_enable = false;
+  }
+  else
+  {
+    setting_local_temp_enable = true;
+  }
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+void ToggleRemoteTemp(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  if (setting_remote_temp_enable == true)
+  {
+    setting_remote_temp_enable = false;
+  }
+  else
+  {
+    setting_remote_temp_enable = true;
+  }
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+void ToggleStatusLED(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  if (setting_status_enable == true)
+  {
+    setting_status_enable = false;
+    digitalWrite(statusLED, LOW); //Turn off the LED
+  }
+  else
+  {
+    setting_status_enable = true;
+  }
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+void ToggleSerialTrigger(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  if (setting_serial_trigger_enable == true)
+  {
+    setting_serial_trigger_enable = false;
+  }
+  else
+  {
+    setting_serial_trigger_enable = true;
+  }
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+void ToggleRawReading(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  if (setting_raw_reading_enable == true)
+  {
+    setting_raw_reading_enable = false;
+  }
+  else
+  {
+    setting_raw_reading_enable = true;
+  }
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+void SetTriggerCharacter(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  setting_trigger_character = ClearAndReadChar(1);
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
+}
+
+void ExitMenu(void)
+{
+  #ifndef USING_USB
+  ClearAndSendHandshakeChar();
+  #endif
+
+  //Do nothing, just exit
+  ClearRxBuffer();
+  RecordSystemSettings();
+
+  #ifndef USING_USB
+  ClearAndSendDoneChar();
+  #endif
 }
 
 //Determine how much time we need between measurements
 //Takes into account current baud rate
 //Takes into account the time to read various sensors
 //Takes into account raw reading printing
-unsigned int calcMinimumReadTime(void)
+unsigned int CalcMinReadTime(void)
 {
   //The first few reads take too little time
   scale.get_units();
@@ -744,7 +816,10 @@ unsigned int calcMinimumReadTime(void)
   //Assume we will need to print a minimum of 7 characters at this baud rate per loop
   //1 / 9600 = 1ms * 10bits per byte = 9.6ms per byte
   float characterTime = 1 / (float)setting_uart_speed;
+
+  #ifdef USING_USB
   Serial.println(characterTime);
+  #endif
 
   //Calculate number of characters per report
   unsigned int characters = 0;
@@ -793,11 +868,14 @@ unsigned int calcMinimumReadTime(void)
     characters += strlen("8355808");
   }
 
-  //Serial.print("characterTime: ");
-  //Serial.println(ceil((float)characters * characterTime));
+  #ifdef USING_USB
+  Serial.print("characterTime: ");
+  Serial.println(ceil((float)characters * characterTime));
 
   //Combine the total amount of sensor read time with the time it takes to print all the characters
   Serial.println(characters);
   Serial.println(sensorReadTime);
+  #endif
+
   return (unsigned int)(sensorReadTime + ceil((float)characters * characterTime));
 }

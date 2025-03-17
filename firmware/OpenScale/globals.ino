@@ -23,6 +23,25 @@ char ClearAndReadChar(uint8_t delayAmount)
   return Serial.read();
 }
 
+const char* ClearAndReadLine(const uint8_t bufferSize)
+{
+  ClearRxBuffer();
+  //Read user input
+  //Max 15 characters for calibrate: "12.5765" = 8 characters (includes trailing /0)
+  //Max 8 characters for baud rate
+  if (bufferSize < 8 || bufferSize > 15)
+  {
+    return "0";
+  }
+  else
+  {
+    static char newSetting[15];
+    read_line(newSetting, sizeof(newSetting));
+
+    return newSetting;
+  }
+}
+
 void ClearAndSendChar(char charToSend)
 {
   // clear buffer just before prompting user for character entry

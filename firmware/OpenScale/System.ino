@@ -105,11 +105,11 @@ void set_default_settings(void)
   setting_trigger_character = '!';
 
   //Commit these new settings to memory
-  record_system_settings();
+  RecordSystemSettings();
 }
 
 //Record the current system settings to EEPROM
-void record_system_settings(void)
+void RecordSystemSettings(void)
 {
   writeBytes(LOCATION_BAUD_MSB, setting_uart_speed, sizeof(setting_uart_speed));
 

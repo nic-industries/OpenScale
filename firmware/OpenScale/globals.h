@@ -9,6 +9,7 @@
 
 void ClearRxBuffer(void);
 char ClearAndReadChar(uint8_t delayAmount);
+const char* ClearAndReadLine(void);
 void ClearAndSendChar(char charToSend);
 void ClearAndSendHandshakeChar(void);
 

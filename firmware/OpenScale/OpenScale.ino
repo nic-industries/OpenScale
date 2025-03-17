@@ -133,7 +133,7 @@ void setup()
   Serial.begin(setting_uart_speed);
   
   #ifdef USING_USB
-  displaySystemHeader(); //Product title and firmware version
+  DisplaySystemHeader(); //Product title and firmware version
   #endif
 
   checkEmergencyReset(); //Look to see if the RX pin is being pulled low
@@ -142,7 +142,7 @@ void setup()
   scale.set_offset(setting_tare_point);
 
   //Calculate the minimum time between reports
-  unsigned int minTime = calcMinimumReadTime();
+  unsigned int minTime = CalcMinReadTime();
   Serial.print(F("Minimum time between reports: "));
   Serial.println(minTime);
 
@@ -286,14 +286,15 @@ void loop()
   //If the user has pressed x go into system setup
   if (setupMode == true)
   {
-    system_setup();
+    SystemSetup();
     setupMode = false;
 
     if (setting_status_enable == false) digitalWrite(statusLED, LOW); //Turn off LED
   }
 }
 
-void CreateMessage(char* message, const char* append) {
+void CreateMessage(char* message, const char* append)
+{
   // Find the length of the current string in message
   int len = strlen(message);
 
