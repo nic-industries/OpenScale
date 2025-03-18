@@ -50,18 +50,18 @@ void ClearAndSendChar(char charToSend)
   Serial.write(charToSend);
 }
 
-void ClearAndSendHandshakeChar(void)
+void ClearAndSendHandshake(void)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();
-
-  Serial.write("z");
+  // Serial.println("ClearAndSendHandshake");
+  Serial.write("z\n");
 }
 
-void ClearAndSendDoneChar(void)
+void ClearAndSendDone(void)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();
-
-  Serial.write("d");
+  // Serial.println("ClearAndSendDone");
+  Serial.write("d\n");
 }

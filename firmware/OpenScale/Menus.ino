@@ -190,10 +190,8 @@ void SystemSetup(void)
     }
     else if (command == 'x')
     {
-      //Do nothing, just exit
       Serial.println(F("Exiting"));
-      ClearRxBuffer();
-      RecordSystemSettings();
+      ExitMenu();
       return;
     }
   }
@@ -201,86 +199,60 @@ void SystemSetup(void)
 #else
 void SystemSetup(void)
 {
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   char command = ClearAndReadChar(0);
 
   if (command == '1')
   {
-    ClearAndSendHandshakeChar();
     TareScale(0);
-    ClearAndSendDoneChar();
   }
   else if (command == '2')
   {
-    ClearAndSendHandshakeChar();
     CalibrateScale();
-    ClearAndSendDoneChar();
   }
   else if (command == '3')
   {
-    ClearAndSendHandshakeChar();
     ToggleTimestamp();
-    ClearAndSendDoneChar();
   }
   else if (command == '4')
   {
-    ClearAndSendHandshakeChar();
     RateSetup();
-    ClearAndSendDoneChar();
   }
   else if (command == '5')
   {
-    ClearAndSendHandshakeChar();
     BaudSetup();
-    ClearAndSendDoneChar();
   }
   else if (command == '6')
   {
-    ClearAndSendHandshakeChar();
     ToggleUnits();
-    ClearAndSendDoneChar();
   }
   else if (command == '7')
   {
-    ClearAndSendHandshakeChar();
     DecmialSetup();
-    ClearAndSendDoneChar();
   }
   else if (command == '8')
   {
-    ClearAndSendHandshakeChar();
     AverageReadingSetup();
-    ClearAndSendDoneChar();
   }
   else if (command == '9')
   {
-    ClearAndSendHandshakeChar();
     ToggleLocalTemp();
-    ClearAndSendDoneChar();
   }
   else if (command == 'r')
   {
-    ClearAndSendHandshakeChar();
     ToggleRemoteTemp();
-    ClearAndSendDoneChar();
   }
   else if (command == 's')
   {
-    ClearAndSendHandshakeChar();
     ToggleStatusLED();
-    ClearAndSendDoneChar();
   }
   else if (command == 't')
   {
-    ClearAndSendHandshakeChar();
     ToggleSerialTrigger();
-    ClearAndSendDoneChar();
   }
   else if (command == 'q')
   {
-    ClearAndSendHandshakeChar();
     ToggleRawReading();
-    ClearAndSendDoneChar();
   }
   else if (command == 'c')
   {
@@ -288,11 +260,7 @@ void SystemSetup(void)
   }
   else if (command == 'x')
   {
-    ClearAndSendHandshakeChar();
-    //Do nothing, just exit
-    ClearRxBuffer();
-    RecordSystemSettings();
-    ClearAndSendDoneChar();
+    ExitMenu();
   }
 }
 #endif
@@ -312,7 +280,7 @@ void TareScale(bool calibrating)
 {
   if (!calibrating)
   {
-    ClearAndSendHandshakeChar();
+    ClearAndSendHandshake();
   }
   
   scale.tare(); //Reset the scale to 0
@@ -320,7 +288,7 @@ void TareScale(bool calibrating)
 
   if (!calibrating)
   {
-    ClearAndSendDoneChar();
+    ClearAndSendDone();
   }
 }
 #endif
@@ -405,13 +373,13 @@ void CalibrateScale(void)
 #else
 void CalibrateScale(void)
 {
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   ClearAndReadChar(0);  //user indicating scale is ready for tare
   TareScale(1);
-  ClearAndSendHandshakeChar(); 
+  ClearAndSendHandshake(); 
   ClearAndReadChar(0);  //user indicating calibration weight is on scale
   long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
-  ClearAndSendHandshakeChar(); 
+  ClearAndSendHandshake(); 
 
   float weightOnScale = atof(ClearAndReadLine(15)); //Convert this string to a float
 
@@ -420,14 +388,14 @@ void CalibrateScale(void)
 
   scale.set_scale(setting_calibration_factor); //Go to this new cal factor
 
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
 }
 #endif
 
 void ToggleTimestamp(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   if (setting_timestamp_enable == true)
@@ -440,7 +408,7 @@ void ToggleTimestamp(void)
   }
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
@@ -491,14 +459,14 @@ void RateSetup(void)
 #else
 void RateSetup(void)
 {
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
 
   //Calculate the minimum time between reports
   unsigned int minTime = CalcMinReadTime();
 
   setting_report_rate = minTime + 1;
 
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
 }
 #endif
 
@@ -551,7 +519,7 @@ void BaudSetup(void)
 #else
 void BaudSetup(void)
 {
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
 
   long newRate = strtolong(ClearAndReadLine(8)); //Convert this string to a long
 
@@ -570,14 +538,14 @@ void BaudSetup(void)
   Serial.end();
   Serial.begin(setting_uart_speed);
 
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
 }
 #endif
 
 void ToggleUnits(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   if (setting_units == UNITS_KG)
@@ -595,7 +563,7 @@ void ToggleUnits(void)
   scale.set_scale(setting_calibration_factor); //Assign this new factor to the scale
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
@@ -629,7 +597,7 @@ void DecmialSetup(void)
 #else
 void DecmialSetup(void)
 {
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
 
   int newDecimalPlaces = strtolong(ClearAndReadLine(8)); //Convert this string to an int
 
@@ -643,6 +611,8 @@ void DecmialSetup(void)
   }
 
   setting_decimal_places = newDecimalPlaces;
+
+  ClearAndSendDone();
 }
 #endif
   
@@ -652,6 +622,8 @@ void AverageReadingSetup(void)
   //Get user input
   #ifdef USING_USB
   Serial.print(F("\n\n\rEnter the number of readings to average together (1 to 64): "));
+  #else
+  ClearAndSendHandshake();
   #endif
 
   int newAverageAmount = strtolong(ClearAndReadLine(8)); //Convert this string to an int
@@ -666,12 +638,16 @@ void AverageReadingSetup(void)
   }
 
   setting_average_amount = newAverageAmount;
+
+  #ifndef USING_USB
+  ClearAndSendHandshake();
+  #endif
 }
 
 void ToggleLocalTemp(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   if (setting_local_temp_enable == true)
@@ -684,14 +660,14 @@ void ToggleLocalTemp(void)
   }
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
 void ToggleRemoteTemp(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   if (setting_remote_temp_enable == true)
@@ -704,14 +680,14 @@ void ToggleRemoteTemp(void)
   }
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
 void ToggleStatusLED(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   if (setting_status_enable == true)
@@ -725,14 +701,14 @@ void ToggleStatusLED(void)
   }
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
 void ToggleSerialTrigger(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   if (setting_serial_trigger_enable == true)
@@ -745,14 +721,14 @@ void ToggleSerialTrigger(void)
   }
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
 void ToggleRawReading(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   if (setting_raw_reading_enable == true)
@@ -765,35 +741,36 @@ void ToggleRawReading(void)
   }
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
 void SetTriggerCharacter(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   setting_trigger_character = ClearAndReadChar(1);
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 
 void ExitMenu(void)
 {
   #ifndef USING_USB
-  ClearAndSendHandshakeChar();
+  ClearAndSendHandshake();
   #endif
 
   //Do nothing, just exit
   ClearRxBuffer();
   RecordSystemSettings();
+  Serial.flush();
 
   #ifndef USING_USB
-  ClearAndSendDoneChar();
+  ClearAndSendDone();
   #endif
 }
 

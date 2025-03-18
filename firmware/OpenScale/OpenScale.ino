@@ -167,53 +167,77 @@ void loop()
   //Print time stamp
   if (setting_timestamp_enable == true)
   {
+    #ifdef USING_USB
     Serial.print(F("st,"));
     Serial.print(startTime);
     Serial.print(F(","));
+    #else
+    char str[20] = "st,";
+    char str2[14];
+    sprintf(str2, "%lu", startTime);
+    CreateMessage(str, str2);
+    Serial.write(str);
+    #endif
   }
 
   //Take average of readings with calibration and tare taken into account
   float currentReading = scale.get_units(setting_average_amount);
 
+  #ifdef USING_USB
+  Serial.print(F("cw,"));
+  Serial.print(currentReading, setting_decimal_places);
+  Serial.print(F(","));
+  #else
   //Print calibrated reading
   char str[20] = "cw,";
   char str2[14];
   CreateMessage(str, dtostrf(currentReading, (setting_decimal_places + 2), setting_decimal_places, str2));
   Serial.write(str);
+  #endif
 
-  // Serial.print(F("cw,"));
-  // Serial.print(currentReading, setting_decimal_places);
-  // Serial.print(F(","));
-
-  // if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
-  // if (setting_units == UNITS_KG) Serial.print(F("kg"));
-  // Serial.print(F(","));
+  #ifdef USING_USB
+  if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
+  if (setting_units == UNITS_KG) Serial.print(F("kg"));
+  Serial.print(F(","));
+  #endif
 
   //Print raw reading
   if (setting_raw_reading_enable == true)
   {
     long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
     
+    #ifdef USING_USB
     Serial.print(F("rr"));
     Serial.print(rawReading);
     Serial.print(F(","));
+    #else
+    char str[20] = "rr,";
+    char str2[14];
+    sprintf(str2, "%ld", rawReading);
+    CreateMessage(str, str2);
+    Serial.write(str);
+    #endif
   }
 
   //Print local temp
   if (setting_local_temp_enable == true)
   {
+    #ifdef USING_USB
+    Serial.print(F("lt,"));
+    Serial.print(getLocalTemperature(), setting_decimal_places);
+    Serial.print(F(","));
+    #else
     char str[20] = "lt,";
     char str2[14];
-    CreateMessage(str, dtostrf(getLocalTemperatureF(), 5, 3, str2));
+    CreateMessage(str, dtostrf(getLocalTemperatureF(), (setting_decimal_places + 2), setting_decimal_places, str2));
     Serial.write(str);
-    // Serial.print(F("lt,"));
-    // Serial.print(getLocalTemperature(), setting_decimal_places);
-    // Serial.print(F(","));
+    #endif
   }
 
   //Print remote temp
   if (setting_remote_temp_enable == true)
   {
+    #ifdef USING_USB
     if (remoteSensorAttached == true)
     {
       Serial.print(F("rt,"));
@@ -224,11 +248,27 @@ void loop()
     {
       Serial.print(F("0,")); //There is no sensor to check
     }
+    #else
+    if (remoteSensorAttached == true)
+    {
+      char str[20] = "rt,";
+      char str2[14];
+      CreateMessage(str, dtostrf(getRemoteTemperatureF(), (setting_decimal_places + 2), setting_decimal_places, str2));
+      Serial.write(str);
+    }
+    else
+    {
+      Serial.write("0,");
+    }
+    #endif
   }
 
   if (setting_status_enable == true) toggleLED();
 
+  #ifdef USING_USB
   Serial.println();
+  #endif
+
   Serial.flush();
 
   //Hang out until the end of this report period
@@ -263,7 +303,7 @@ void loop()
     char incoming = 0;
 
     //Wait for a trigger character or x from user
-    while (incoming != setting_trigger_character && incoming != 'x')
+    while (incoming != setting_trigger_character && incoming != escape_character)
     {
       while (Serial.available() == false) {
 
