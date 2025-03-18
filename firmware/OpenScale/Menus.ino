@@ -284,7 +284,7 @@ void SystemSetup(void)
   }
   else if (command == 'c')
   {
-    SetSerialTrigger();
+    SetTriggerCharacter();
   }
   else if (command == 'x')
   {
@@ -312,7 +312,7 @@ void TareScale(bool calibrating)
 {
   if (!calibrating)
   {
-    ClearAndSendHandshakeCar();
+    ClearAndSendHandshakeChar();
   }
   
   scale.tare(); //Reset the scale to 0
@@ -405,11 +405,11 @@ void CalibrateScale(void)
 #else
 void CalibrateScale(void)
 {
-  ClearAndSendHandshakeCar();
-  char nextChar = ClearAndReadChar(0);  //user indicating scale is ready for tare
+  ClearAndSendHandshakeChar();
+  ClearAndReadChar(0);  //user indicating scale is ready for tare
   TareScale(1);
   ClearAndSendHandshakeChar(); 
-  char nextChar = ClearAndReadChar(0);  //user indicating calibration weight is on scale
+  ClearAndReadChar(0);  //user indicating calibration weight is on scale
   long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
   ClearAndSendHandshakeChar(); 
 
@@ -639,7 +639,7 @@ void DecmialSetup(void)
   }
   else if (newDecimalPlaces > 4)
   {
-    newDecimalPlace = 4
+    newDecimalPlaces = 4;
   }
 
   setting_decimal_places = newDecimalPlaces;

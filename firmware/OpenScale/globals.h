@@ -2,7 +2,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define USING_USB
+//#define USING_USB
 //#define USING_TTL
 
 // extern int globalVar;  // Declaration (not definition)
