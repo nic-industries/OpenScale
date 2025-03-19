@@ -196,9 +196,11 @@ void loop()
   #endif
 
   #ifdef USING_USB
-  if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
-  if (setting_units == UNITS_KG) Serial.print(F("kg"));
-  Serial.print(F(","));
+  if (setting_units == UNITS_LBS) Serial.print(F("lbs,"));
+  if (setting_units == UNITS_KG) Serial.print(F("kg,"));
+  #else
+  if (setting_units == UNITS_LBS) Serial.write("lbs,");
+  if (setting_units == UNITS_KG) Serial.write("kg,");
   #endif
 
   //Print raw reading
@@ -224,7 +226,7 @@ void loop()
   {
     #ifdef USING_USB
     Serial.print(F("lt,"));
-    Serial.print(getLocalTemperature(), setting_decimal_places);
+    Serial.print(getLocalTemperatureF(), setting_decimal_places);
     Serial.print(F(","));
     #else
     char str[20] = "lt,";
