@@ -198,9 +198,9 @@ void loop()
   #ifdef USING_USB
   if (setting_units == UNITS_LBS) Serial.print(F("lbs,"));
   if (setting_units == UNITS_KG) Serial.print(F("kg,"));
-  #else
-  if (setting_units == UNITS_LBS) Serial.write("lbs,");
-  if (setting_units == UNITS_KG) Serial.write("kg,");
+  // #else
+  // if (setting_units == UNITS_LBS) Serial.write("lbs,");
+  // if (setting_units == UNITS_KG) Serial.write("kg,");
   #endif
 
   //Print raw reading
@@ -269,6 +269,8 @@ void loop()
 
   #ifdef USING_USB
   Serial.println();
+  #else
+  Serial.write("\n");
   #endif
 
   Serial.flush();
@@ -333,6 +335,13 @@ void loop()
 
     if (setting_status_enable == false) digitalWrite(statusLED, LOW); //Turn off LED
   }
+
+  // adding this here to try and send less data to not overload the python rx buffer
+  // the python rx buffer seems to get too much data too fast and then there is a 
+  // delay in printing the data out 
+  // #ifndef USING_USB
+  // delay(100);
+  // #endif
 }
 
 void CreateMessage(char* message, const char* append)
