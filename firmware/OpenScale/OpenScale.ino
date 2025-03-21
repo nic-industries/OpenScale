@@ -160,120 +160,121 @@ void setup()
 
 void loop()
 {
-  Serial.flush();
-
   unsigned long startTime = millis();
 
-  //Print time stamp
-  if (setting_timestamp_enable == true)
+  if (setting_serial_trigger_enable == true)
   {
-    #ifdef USING_USB
-    Serial.print(F("st,"));
-    Serial.print(startTime);
-    Serial.print(F(","));
-    #else
-    char str[20] = "st,";
-    char str2[14];
-    sprintf(str2, "%lu", startTime);
-    CreateMessage(str, str2);
-    Serial.write(str);
-    #endif
-  }
-
-  //Take average of readings with calibration and tare taken into account
-  float currentReading = scale.get_units(setting_average_amount);
-
-  #ifdef USING_USB
-  Serial.print(F("cw,"));
-  Serial.print(currentReading, setting_decimal_places);
-  Serial.print(F(","));
-  #else
-  //Print calibrated reading
-  char str[20] = "cw,";
-  char str2[14];
-  CreateMessage(str, dtostrf(currentReading, (setting_decimal_places + 2), setting_decimal_places, str2));
-  Serial.write(str);
-  #endif
-
-  #ifdef USING_USB
-  if (setting_units == UNITS_LBS) Serial.print(F("lbs,"));
-  if (setting_units == UNITS_KG) Serial.print(F("kg,"));
-  // #else
-  // if (setting_units == UNITS_LBS) Serial.write("lbs,");
-  // if (setting_units == UNITS_KG) Serial.write("kg,");
-  #endif
-
-  //Print raw reading
-  if (setting_raw_reading_enable == true)
-  {
-    long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
-    
-    #ifdef USING_USB
-    Serial.print(F("rr"));
-    Serial.print(rawReading);
-    Serial.print(F(","));
-    #else
-    char str[20] = "rr,";
-    char str2[14];
-    sprintf(str2, "%ld", rawReading);
-    CreateMessage(str, str2);
-    Serial.write(str);
-    #endif
-  }
-
-  //Print local temp
-  if (setting_local_temp_enable == true)
-  {
-    #ifdef USING_USB
-    Serial.print(F("lt,"));
-    Serial.print(getLocalTemperatureF(), setting_decimal_places);
-    Serial.print(F(","));
-    #else
-    char str[20] = "lt,";
-    char str2[14];
-    CreateMessage(str, dtostrf(getLocalTemperatureF(), (setting_decimal_places + 2), setting_decimal_places, str2));
-    Serial.write(str);
-    #endif
-  }
-
-  //Print remote temp
-  if (setting_remote_temp_enable == true)
-  {
-    #ifdef USING_USB
-    if (remoteSensorAttached == true)
+    //Print time stamp
+    if (setting_timestamp_enable == true)
     {
-      Serial.print(F("rt,"));
-      Serial.print(getRemoteTemperatureF(), setting_decimal_places);
+      #ifdef USING_USB
+      Serial.print(F("st,"));
+      Serial.print(startTime);
       Serial.print(F(","));
-    }
-    else
-    {
-      Serial.print(F("0,")); //There is no sensor to check
-    }
-    #else
-    if (remoteSensorAttached == true)
-    {
-      char str[20] = "rt,";
+      #else
+      char str[20] = "st,";
       char str2[14];
-      CreateMessage(str, dtostrf(getRemoteTemperatureF(), (setting_decimal_places + 2), setting_decimal_places, str2));
+      sprintf(str2, "%lu", startTime);
+      CreateMessage(str, str2);
       Serial.write(str);
+      #endif
     }
-    else
-    {
-      Serial.write("0,");
-    }
+
+    //Take average of readings with calibration and tare taken into account
+    float currentReading = scale.get_units(setting_average_amount);
+
+    #ifdef USING_USB
+    Serial.print(F("cw,"));
+    Serial.print(currentReading, setting_decimal_places);
+    Serial.print(F(","));
+    #else
+    //Print calibrated reading
+    char str[20] = "cw,";
+    char str2[14];
+    CreateMessage(str, dtostrf(currentReading, (setting_decimal_places + 2), setting_decimal_places, str2));
+    Serial.write(str);
     #endif
+
+    #ifdef USING_USB
+    if (setting_units == UNITS_LBS) Serial.print(F("lbs,"));
+    if (setting_units == UNITS_KG) Serial.print(F("kg,"));
+    // #else
+    // if (setting_units == UNITS_LBS) Serial.write("lbs,");
+    // if (setting_units == UNITS_KG) Serial.write("kg,");
+    #endif
+
+    //Print raw reading
+    if (setting_raw_reading_enable == true)
+    {
+      long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
+      
+      #ifdef USING_USB
+      Serial.print(F("rr"));
+      Serial.print(rawReading);
+      Serial.print(F(","));
+      #else
+      char str[20] = "rr,";
+      char str2[14];
+      sprintf(str2, "%ld", rawReading);
+      CreateMessage(str, str2);
+      Serial.write(str);
+      #endif
+    }
+
+    //Print local temp
+    if (setting_local_temp_enable == true)
+    {
+      #ifdef USING_USB
+      Serial.print(F("lt,"));
+      Serial.print(getLocalTemperatureF(), setting_decimal_places);
+      Serial.print(F(","));
+      #else
+      char str[20] = "lt,";
+      char str2[14];
+      CreateMessage(str, dtostrf(getLocalTemperatureF(), (setting_decimal_places + 2), setting_decimal_places, str2));
+      Serial.write(str);
+      #endif
+    }
+
+    //Print remote temp
+    if (setting_remote_temp_enable == true)
+    {
+      #ifdef USING_USB
+      if (remoteSensorAttached == true)
+      {
+        Serial.print(F("rt,"));
+        Serial.print(getRemoteTemperatureF(), setting_decimal_places);
+        Serial.print(F(","));
+      }
+      else
+      {
+        Serial.print(F("0,")); //There is no sensor to check
+      }
+      #else
+      if (remoteSensorAttached == true)
+      {
+        char str[20] = "rt,";
+        char str2[14];
+        CreateMessage(str, dtostrf(getRemoteTemperatureF(), (setting_decimal_places + 2), setting_decimal_places, str2));
+        Serial.write(str);
+      }
+      else
+      {
+        Serial.write("0,");
+      }
+      #endif
+    }
+
+    if (setting_status_enable == true) toggleLED();
+
+    #ifdef USING_USB
+    Serial.println();
+    #else
+    Serial.write("\n");
+    #endif
+
+    Serial.flush();
   }
-
-  if (setting_status_enable == true) toggleLED();
-
-  #ifdef USING_USB
-  Serial.println();
-  #else
-  Serial.write("\n");
-  #endif
-
-  Serial.flush();
 
   //Hang out until the end of this report period
   while (1)
@@ -297,7 +298,7 @@ void loop()
   }
 
   //If we are serially triggered then wait for incoming character
-  if (setupMode == false && setting_serial_trigger_enable == true)
+  if (setupMode == false && setting_serial_trigger_enable == false)
   {
     //Power everything down and go to sleep until a char is received
 
@@ -335,13 +336,6 @@ void loop()
 
     if (setting_status_enable == false) digitalWrite(statusLED, LOW); //Turn off LED
   }
-
-  // adding this here to try and send less data to not overload the python rx buffer
-  // the python rx buffer seems to get too much data too fast and then there is a 
-  // delay in printing the data out 
-  // #ifndef USING_USB
-  // delay(100);
-  // #endif
 }
 
 void CreateMessage(char* message, const char* append)

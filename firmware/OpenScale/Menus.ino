@@ -199,68 +199,72 @@ void SystemSetup(void)
 #else
 void SystemSetup(void)
 {
-  ClearAndSendHandshake();
-  char command = ClearAndReadChar(0);
+  while(1)
+  {
+    ClearAndSendHandshake();
+    char command = ClearAndReadChar(0);
 
-  if (command == '1')
-  {
-    TareScale(0);
-  }
-  else if (command == '2')
-  {
-    CalibrateScale();
-  }
-  else if (command == '3')
-  {
-    ToggleTimestamp();
-  }
-  else if (command == '4')
-  {
-    RateSetup();
-  }
-  else if (command == '5')
-  {
-    BaudSetup();
-  }
-  else if (command == '6')
-  {
-    ToggleUnits();
-  }
-  else if (command == '7')
-  {
-    DecmialSetup();
-  }
-  else if (command == '8')
-  {
-    AverageReadingSetup();
-  }
-  else if (command == '9')
-  {
-    ToggleLocalTemp();
-  }
-  else if (command == 'r')
-  {
-    ToggleRemoteTemp();
-  }
-  else if (command == 's')
-  {
-    ToggleStatusLED();
-  }
-  else if (command == 't')
-  {
-    ToggleSerialTrigger();
-  }
-  else if (command == 'q')
-  {
-    ToggleRawReading();
-  }
-  else if (command == 'c')
-  {
-    SetTriggerCharacter();
-  }
-  else if (command == 'x')
-  {
-    ExitMenu();
+    if (command == '1')
+    {
+      TareScale(0);
+    }
+    else if (command == '2')
+    {
+      CalibrateScale();
+    }
+    else if (command == '3')
+    {
+      ToggleTimestamp();
+    }
+    else if (command == '4')
+    {
+      RateSetup();
+    }
+    else if (command == '5')
+    {
+      BaudSetup();
+    }
+    else if (command == '6')
+    {
+      ToggleUnits();
+    }
+    else if (command == '7')
+    {
+      DecmialSetup();
+    }
+    else if (command == '8')
+    {
+      AverageReadingSetup();
+    }
+    else if (command == '9')
+    {
+      ToggleLocalTemp();
+    }
+    else if (command == 'r')
+    {
+      ToggleRemoteTemp();
+    }
+    else if (command == 's')
+    {
+      ToggleStatusLED();
+    }
+    else if (command == 't')
+    {
+      ToggleSerialTrigger();
+    }
+    else if (command == 'q')
+    {
+      ToggleRawReading();
+    }
+    else if (command == 'c')
+    {
+      SetTriggerCharacter();
+    }
+    else if (command == 'x')
+    {
+      ExitMenu();
+      return;
+    }
   }
 }
 #endif
