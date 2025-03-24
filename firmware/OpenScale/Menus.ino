@@ -199,9 +199,9 @@ void SystemSetup(void)
 #else
 void SystemSetup(void)
 {
-  while(1)
+  bool menuDone = false;
+  while(!menuDone)
   {
-    ClearAndSendHandshake();
     char command = ClearAndReadChar(0);
 
     if (command == '1')
@@ -263,7 +263,7 @@ void SystemSetup(void)
     else if (command == 'x')
     {
       ExitMenu();
-      return;
+      menuDone = true;
     }
   }
 }
@@ -282,11 +282,6 @@ void TareScale(void)
 #else
 void TareScale(bool calibrating)
 {
-  if (!calibrating)
-  {
-    ClearAndSendHandshake();
-  }
-  
   scale.tare(); //Reset the scale to 0
   setting_tare_point = scale.read_average(10); //Get 10 readings from the HX711 and average them
 
@@ -377,13 +372,10 @@ void CalibrateScale(void)
 #else
 void CalibrateScale(void)
 {
-  ClearAndSendHandshake();
   ClearAndReadChar(0);  //user indicating scale is ready for tare
   TareScale(1);
-  ClearAndSendHandshake(); 
   ClearAndReadChar(0);  //user indicating calibration weight is on scale
   long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
-  ClearAndSendHandshake(); 
 
   float weightOnScale = atof(ClearAndReadLine(15)); //Convert this string to a float
 
@@ -398,10 +390,6 @@ void CalibrateScale(void)
 
 void ToggleTimestamp(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   if (setting_timestamp_enable == true)
   {
     setting_timestamp_enable = false;
@@ -463,8 +451,6 @@ void RateSetup(void)
 #else
 void RateSetup(void)
 {
-  ClearAndSendHandshake();
-
   //Calculate the minimum time between reports
   unsigned int minTime = CalcMinReadTime();
 
@@ -523,8 +509,6 @@ void BaudSetup(void)
 #else
 void BaudSetup(void)
 {
-  ClearAndSendHandshake();
-
   long newRate = strtolong(ClearAndReadLine(8)); //Convert this string to a long
 
   if (newRate < BAUD_MIN)
@@ -548,10 +532,6 @@ void BaudSetup(void)
 
 void ToggleUnits(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   if (setting_units == UNITS_KG)
   {
     setting_units = UNITS_LBS;
@@ -601,8 +581,6 @@ void DecmialSetup(void)
 #else
 void DecmialSetup(void)
 {
-  ClearAndSendHandshake();
-
   int newDecimalPlaces = strtolong(ClearAndReadLine(8)); //Convert this string to an int
 
   if (newDecimalPlaces < 0)
@@ -626,8 +604,6 @@ void AverageReadingSetup(void)
   //Get user input
   #ifdef USING_USB
   Serial.print(F("\n\n\rEnter the number of readings to average together (1 to 64): "));
-  #else
-  ClearAndSendHandshake();
   #endif
 
   int newAverageAmount = strtolong(ClearAndReadLine(8)); //Convert this string to an int
@@ -644,16 +620,12 @@ void AverageReadingSetup(void)
   setting_average_amount = newAverageAmount;
 
   #ifndef USING_USB
-  ClearAndSendHandshake();
+  ClearAndSendDone();
   #endif
 }
 
 void ToggleLocalTemp(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   if (setting_local_temp_enable == true)
   {
     setting_local_temp_enable = false;
@@ -670,10 +642,6 @@ void ToggleLocalTemp(void)
 
 void ToggleRemoteTemp(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   if (setting_remote_temp_enable == true)
   {
     setting_remote_temp_enable = false;
@@ -690,10 +658,6 @@ void ToggleRemoteTemp(void)
 
 void ToggleStatusLED(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   if (setting_status_enable == true)
   {
     setting_status_enable = false;
@@ -711,10 +675,6 @@ void ToggleStatusLED(void)
 
 void ToggleSerialTrigger(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   if (setting_serial_trigger_enable == true)
   {
     setting_serial_trigger_enable = false;
@@ -731,10 +691,6 @@ void ToggleSerialTrigger(void)
 
 void ToggleRawReading(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   if (setting_raw_reading_enable == true)
   {
     setting_raw_reading_enable = false;
@@ -751,10 +707,6 @@ void ToggleRawReading(void)
 
 void SetTriggerCharacter(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   setting_trigger_character = ClearAndReadChar(1);
 
   #ifndef USING_USB
@@ -764,17 +716,13 @@ void SetTriggerCharacter(void)
 
 void ExitMenu(void)
 {
-  #ifndef USING_USB
-  ClearAndSendHandshake();
-  #endif
-
   //Do nothing, just exit
-  ClearRxBuffer();
   RecordSystemSettings();
+  ClearRxBuffer();
   Serial.flush();
 
   #ifndef USING_USB
-  ClearAndSendDone();
+  ClearAndSendMenuEnd();
   #endif
 }
 

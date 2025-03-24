@@ -331,6 +331,7 @@ void loop()
   //If the user has pressed x go into system setup
   if (setupMode == true)
   {
+    ClearAndSendMenuStart();
     SystemSetup();
     setupMode = false;
 

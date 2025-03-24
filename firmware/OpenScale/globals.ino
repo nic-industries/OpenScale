@@ -9,6 +9,7 @@ char ClearAndReadChar(uint8_t delayAmount)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();
+  Serial.flush();
 
   //Read command
   while (!Serial.available())
@@ -50,18 +51,26 @@ void ClearAndSendChar(char charToSend)
   Serial.write(charToSend);
 }
 
-void ClearAndSendHandshake(void)
+void ClearAndSendMenuStart(void)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();
-  
-  Serial.write("z\n");
+  delay(100);
+  Serial.write("m\n");
+}
+
+void ClearAndSendMenuEnd(void)
+{
+  // clear buffer just before prompting user for character entry
+  ClearRxBuffer();
+  delay(100);
+  Serial.write("n\n");
 }
 
 void ClearAndSendDone(void)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();
-  
+  delay(100);
   Serial.write("d\n");
 }
