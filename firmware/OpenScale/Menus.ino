@@ -144,7 +144,7 @@ void SystemSetup(void)
     }
     else if (command == '7')
     {
-      DecmialSetup();
+      DecimalSetup();
     }
     else if (command == '8')
     {
@@ -199,71 +199,83 @@ void SystemSetup(void)
 #else
 void SystemSetup(void)
 {
+  ClearAndSendMenuStart();
   bool menuDone = false;
+  char command = '0';
+
   while(!menuDone)
   {
-    char command = ClearAndReadChar(0);
+    if (Serial.available() > 0)
+    {
+      command = Serial.read();
+    }
 
-    if (command == '1')
+    switch(command)
     {
-      TareScale(0);
-    }
-    else if (command == '2')
-    {
-      CalibrateScale();
-    }
-    else if (command == '3')
-    {
-      ToggleTimestamp();
-    }
-    else if (command == '4')
-    {
-      RateSetup();
-    }
-    else if (command == '5')
-    {
-      BaudSetup();
-    }
-    else if (command == '6')
-    {
-      ToggleUnits();
-    }
-    else if (command == '7')
-    {
-      DecmialSetup();
-    }
-    else if (command == '8')
-    {
-      AverageReadingSetup();
-    }
-    else if (command == '9')
-    {
-      ToggleLocalTemp();
-    }
-    else if (command == 'r')
-    {
-      ToggleRemoteTemp();
-    }
-    else if (command == 's')
-    {
-      ToggleStatusLED();
-    }
-    else if (command == 't')
-    {
-      ToggleSerialTrigger();
-    }
-    else if (command == 'q')
-    {
-      ToggleRawReading();
-    }
-    else if (command == 'c')
-    {
-      SetTriggerCharacter();
-    }
-    else if (command == 'x')
-    {
-      ExitMenu();
-      menuDone = true;
+      case '1':
+        TareScale(0);
+        command = '0';
+        break;
+      case '2':
+        CalibrateScale();
+        command = '0';
+        break;
+      case '3':
+        ToggleTimestamp();
+        command = '0';
+        break;
+      case '4':
+        RateSetup();
+        command = '0';
+        break;
+      case '5':
+        BaudSetup();
+        command = '0';
+        break;
+      case '6':
+        ToggleUnits();
+        command = '0';
+        break;
+      case '7':
+        DecimalSetup();
+        command = '0';
+        break;
+      case '8':
+        AverageReadingSetup();
+        command = '0';
+        break;
+      case '9':
+        ToggleLocalTemp();
+        command = '0';
+        break;
+      case 'r':
+        ToggleRemoteTemp();
+        command = '0';
+        break;
+      case 's':
+        ToggleStatusLED();
+        command = '0';
+        break;
+      case 't':
+        ToggleSerialTrigger();
+        command = '0';
+        break;
+      case 'q':
+        ToggleRawReading();
+        command = '0';
+        break;
+      case 'c':
+        SetTriggerCharacter();
+        command = '0';
+        break;
+      case 'x':
+        ExitMenu();
+        command = '0';
+        menuDone = true;
+        break;
+      default:
+        delay(100);
+        break;
     }
   }
 }
@@ -553,7 +565,7 @@ void ToggleUnits(void)
 
 #ifdef USING_USB
 //Configure how many decimals to show
-void DecmialSetup(void)
+void DecimalSetup(void)
 {
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
@@ -579,7 +591,7 @@ void DecmialSetup(void)
     Serial.println(F("Error: Out of bounds"));
 }
 #else
-void DecmialSetup(void)
+void DecimalSetup(void)
 {
   int newDecimalPlaces = strtolong(ClearAndReadLine(8)); //Convert this string to an int
 
@@ -718,7 +730,6 @@ void ExitMenu(void)
 {
   //Do nothing, just exit
   RecordSystemSettings();
-  ClearRxBuffer();
   Serial.flush();
 
   #ifndef USING_USB
