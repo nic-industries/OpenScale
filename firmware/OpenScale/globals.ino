@@ -5,7 +5,7 @@ void ClearRxBuffer(void)
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 }
 
-char ClearAndReadChar(uint8_t delayAmount)
+char ClearAndReadCharBlocking(uint8_t delayAmount)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();
@@ -22,6 +22,21 @@ char ClearAndReadChar(uint8_t delayAmount)
   }
 
   return Serial.read();
+}
+
+char ClearAndReadCharNonBlocking()
+{
+  // clear buffer just before prompting user for character entry
+  ClearRxBuffer();
+  Serial.flush();
+  char returnChar = '\0';
+
+  if (Serial.available() > 0)
+  {
+    returnChar = Serial.read();
+  }
+
+  return returnChar;
 }
 
 const char* ClearAndReadLine(const uint8_t bufferSize)
@@ -73,4 +88,12 @@ void ClearAndSendDone(void)
   ClearRxBuffer();
   delay(100);
   Serial.write("d\n");
+}
+
+void ClearAndSendHandshake(void)
+{
+  // clear buffer just before prompting user for character entry
+  ClearRxBuffer();
+  delay(100);
+  Serial.write("z\n");
 }

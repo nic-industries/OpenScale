@@ -2,6 +2,8 @@
  These are lower level system functions
 */
 
+#include "globals.h"
+
 //Check to see if we need an emergency UART reset
 //Scan the RX pin for 2 seconds
 //If it's low the entire time, then return 1
@@ -62,6 +64,7 @@ void toggleLED()
 //Resets all the system settings to safe values
 void set_default_settings(void)
 {
+  #ifdef USING_USB
   //Reset UART to 9600bps
   setting_uart_speed = 9600;
 
@@ -81,10 +84,10 @@ void set_default_settings(void)
   setting_timestamp_enable = true;
 
   //Reset decimals
-  setting_decimal_places = 2;
+  setting_decimal_places = 2; //was the default
 
   //Reset average amount
-  setting_average_amount = 4;
+  setting_average_amount = 4;   //was the default
 
   //Reset local temp
   setting_local_temp_enable = true;
@@ -96,13 +99,57 @@ void set_default_settings(void)
   setting_status_enable = true;
 
   //Reset serial trigger
-  setting_serial_trigger_enable = false;
+  setting_serial_trigger_enable = true;
 
   //Reset raw reading
   setting_raw_reading_enable = false;
 
   //Reset trigger character
   setting_trigger_character = '!';
+  #else //*********************************************************
+  //MDU defaults
+  //Reset UART to 115200 bps
+  setting_uart_speed = 115200;
+
+  //Reset to pounds as our unit of measure
+  setting_units = UNITS_KG;
+
+  //Reset report rate to 2Hz
+  setting_report_rate = 500;
+
+  //Reset calibration factor
+  setting_calibration_factor = 1000;
+
+  //Reset tare point
+  setting_tare_point = 0;
+
+  //Reset time stamp
+  setting_timestamp_enable = false;
+
+  //Reset decimals
+  setting_decimal_places = 4;   
+
+  //Reset average amount
+  setting_average_amount = 5;   
+
+  //Reset local temp
+  setting_local_temp_enable = false;
+
+  //Reset remote temp
+  setting_remote_temp_enable = false;
+
+  //Reset LED blinking
+  setting_status_enable = true;
+
+  //Reset serial trigger
+  setting_serial_trigger_enable = true;
+
+  //Reset raw reading
+  setting_raw_reading_enable = false;
+
+  //Reset trigger character
+  setting_trigger_character = '!';
+  #endif
 
   //Commit these new settings to memory
   RecordSystemSettings();
@@ -148,7 +195,11 @@ void readSystemSettings(void)
   setting_uart_speed = readBytes(LOCATION_BAUD_MSB, sizeof(setting_uart_speed));
   if (setting_uart_speed < BAUD_MIN || setting_uart_speed > BAUD_MAX)
   {
+    #ifdef USING_USB
     setting_uart_speed = 9600; //Reset UART to 9600 if there is no speed stored
+    #else
+    setting_uart_speed = 115200; //Reset UART to 115200 if there is no speed stored, MDU at 115200
+    #endif
     writeBytes(LOCATION_BAUD_MSB, setting_uart_speed, sizeof(setting_uart_speed));
   }
 
@@ -156,7 +207,11 @@ void readSystemSettings(void)
   setting_units = EEPROM.read(LOCATION_MASS_UNITS);
   if (setting_units > 1)
   {
+    #ifdef USING_USB
     setting_units = UNITS_LBS; //Default to lbs
+    #else
+    setting_units = UNITS_KG; //Default to kgs for mdu
+    #endif
     EEPROM.write(LOCATION_MASS_UNITS, setting_units);
   }
 
@@ -188,7 +243,11 @@ void readSystemSettings(void)
   setting_timestamp_enable = EEPROM.read(LOCATION_TIMESTAMP_ENABLE);
   if (setting_timestamp_enable > 2)
   {
+    #ifdef USING_USB
     setting_timestamp_enable = true; //Default to true
+    #else
+    setting_timestamp_enable = false; //Default to false for mdu
+    #endif
     EEPROM.write(LOCATION_TIMESTAMP_ENABLE, setting_timestamp_enable);
   }
 
@@ -196,7 +255,11 @@ void readSystemSettings(void)
   setting_decimal_places = EEPROM.read(LOCATION_DECIMAL_PLACES);
   if (setting_decimal_places > 5)
   {
+    #ifdef USING_USB
     setting_decimal_places = 2; //Default to 2
+    #else
+    setting_decimal_places = 4; //Default to 4 for mdu
+    #endif
     EEPROM.write(LOCATION_DECIMAL_PLACES, setting_decimal_places);
   }
 
@@ -204,7 +267,11 @@ void readSystemSettings(void)
   setting_average_amount = EEPROM.read(LOCATION_AVERAGE_AMOUNT);
   if (setting_average_amount > 64 || setting_average_amount == 0)
   {
+    #ifdef USING_USB
     setting_average_amount = 4; //Default to 4
+    #else
+    setting_average_amount = 5; //Default to 5 for mdu
+    #endif
     EEPROM.write(LOCATION_AVERAGE_AMOUNT, setting_average_amount);
   }
 
@@ -212,7 +279,11 @@ void readSystemSettings(void)
   setting_local_temp_enable = EEPROM.read(LOCATION_LOCAL_TEMP_ENABLE);
   if (setting_local_temp_enable > 1)
   {
+    #ifdef USING_USB
     setting_local_temp_enable = true; //Default to true
+    #else
+    setting_local_temp_enable = false; //Default to false for mdu
+    #endif
     EEPROM.write(LOCATION_LOCAL_TEMP_ENABLE, setting_local_temp_enable);
   }
 
@@ -220,7 +291,11 @@ void readSystemSettings(void)
   setting_remote_temp_enable = EEPROM.read(LOCATION_REMOTE_TEMP_ENABLE);
   if (setting_remote_temp_enable > 1)
   {
+    #ifdef USING_USB
     setting_remote_temp_enable = false; //Default to false
+    #else
+    setting_remote_temp_enable = false; //Default to false for mdu
+    #endif
     EEPROM.write(LOCATION_REMOTE_TEMP_ENABLE, setting_remote_temp_enable);
   }
 
@@ -228,7 +303,11 @@ void readSystemSettings(void)
   setting_status_enable = EEPROM.read(LOCATION_STATUS_ENABLE);
   if (setting_status_enable > 1)
   {
+    #ifdef USING_USB
     setting_status_enable = true; //Default to true
+    #else
+    setting_status_enable = true; //Default to true for mdu
+    #endif
     EEPROM.write(LOCATION_STATUS_ENABLE, setting_status_enable);
   }
 
@@ -236,7 +315,11 @@ void readSystemSettings(void)
   setting_serial_trigger_enable = EEPROM.read(LOCATION_SERIAL_TRIGGER_ENABLE);
   if (setting_serial_trigger_enable > 1)
   {
+    #ifdef USING_USB
     setting_serial_trigger_enable = false; //Default to false
+    #else
+    setting_serial_trigger_enable = true; //Default to true for mdu
+    #endif
     EEPROM.write(LOCATION_SERIAL_TRIGGER_ENABLE, setting_serial_trigger_enable);
   }
 
@@ -244,7 +327,11 @@ void readSystemSettings(void)
   setting_raw_reading_enable = EEPROM.read(LOCATION_RAW_READING_ENABLE);
   if (setting_raw_reading_enable > 1)
   {
+    #ifdef USING_USB
     setting_raw_reading_enable = false; //Default to false
+    #else
+    setting_raw_reading_enable = false; //Default to false for mdu
+    #endif
     EEPROM.write(LOCATION_RAW_READING_ENABLE, setting_raw_reading_enable);
   }
 

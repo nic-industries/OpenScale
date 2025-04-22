@@ -72,6 +72,7 @@
 
 //Global variables
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#ifdef USING_USB
 long setting_uart_speed; //This is the baud rate that the system runs at, default is 9600. Can be 1,200 to 1,000,000
 byte setting_units; //Lbs or kg?
 unsigned int setting_report_rate;
@@ -93,6 +94,29 @@ const int minimum_powercycle_time = 500; //Anything less than 500 can cause read
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 const byte statusLED = 13;  //Flashes with each reading
+#else //*****************************************************************************************
+long setting_uart_speed; //This is the baud rate that the system runs at, default is 9600. Can be 1,200 to 1,000,000
+byte setting_units; //Lbs or kg?
+unsigned int setting_report_rate;
+long setting_calibration_factor; //Value used to convert the load cell reading to lbs or kg
+long setting_tare_point; //Zero value that is found when scale is tared
+uint8_t setting_timestamp_enable; //Prints the number of miliseconds since boot next to weight reading
+byte setting_decimal_places; //How many decimals to display
+byte setting_average_amount; //How many readings to take before reporting reading
+byte setting_local_temp_enable; //Prints the local temperature in C
+byte setting_remote_temp_enable; //Prints the remote temperature in C
+byte setting_status_enable; //Turns on/off the blinking status LED
+byte setting_serial_trigger_enable; //Takes reading when serial character is received
+byte setting_raw_reading_enable; //Prints the raw, 24bit, long from the HX711, ex: 8355808
+byte setting_trigger_character; //The character that will cause OpenScale to report a reading
+boolean setupMode = false; //This is set to true if user presses x
+
+const byte escape_character = 'x'; //This is the ASCII character we look for to break reporting
+const int minimum_powercycle_time = 500; //Anything less than 500 can cause reading problems
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+const byte statusLED = 13;  //Flashes with each reading
+#endif
 
 HX711 scale; //Setup interface to scale
 
@@ -313,7 +337,6 @@ void loop()
       {
         while (Serial.available() == false)
         {
-
           delay(1);
           //We go into deep sleep here. This will save 10-20mA.
           power_twi_disable();
