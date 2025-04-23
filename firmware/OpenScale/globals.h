@@ -3,16 +3,16 @@
 #define GLOBALS_H
 
 // #define USING_USB
-// #define USING_TTL
+#define USING_TTL
 
 // extern int globalVar;  // Declaration (not definition)
 
 // global defaults for MDU
 const long UART_SPEED = 115200; 
 const byte UNITS = 0; //0 = kilograms
-const unsigned int REPORT_RATE = 500;
-const long CALIBRATION_FACTOR = 1000; 
-const long TARE_POINT = 0; 
+const unsigned int REPORT_RATE = 200;
+const long CALIBRATION_FACTOR = 0; 
+const long TARE_POINT = 1000; 
 const uint8_t TIMESTAMP_ENABLE = false; 
 const byte DECIMAL_PLACES = 4; 
 const byte AVERAGE_AMOUNT = 5; 

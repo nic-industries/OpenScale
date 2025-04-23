@@ -167,17 +167,21 @@ void setup()
 
   //Calculate the minimum time between reports
   unsigned int minTime = CalcMinReadTime();
+  #ifdef USING_USB
   Serial.print(F("Minimum time between reports: "));
   Serial.println(minTime);
+  #endif
 
   //Look for a special case where the report rate time is less than the allowed minimum
   if (setting_report_rate < minTime) setting_report_rate = minTime;
 
+  #ifdef USING_USB
   Serial.print(F("Press "));
   Serial.print((char)escape_character);
   Serial.println(F(" to bring up settings"));
 
   Serial.println(F("Readings:"));
+  #endif
 
   powerUpScale(); //Be sure the scale is powered up
 }

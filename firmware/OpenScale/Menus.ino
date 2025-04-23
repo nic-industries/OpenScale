@@ -213,7 +213,7 @@ void SystemSetup(void)
     switch(command)
     {
       case '1':
-        TareScale(0);
+        TareScale();
         command = '0';
         break;
       case '2':
@@ -283,7 +283,7 @@ void SystemSetup(void)
 }
 
 // places tare functionality into a method
-void TareScale(bool calibrating)
+void TareScale(void)
 {
   #ifdef USING_USB  //********************
 
@@ -391,9 +391,9 @@ void CalibrateScale(void)
   {
     previousMillis = currentMillis;
   }
-  ClearAndReadChar(0);  //user indicating scale is ready for tare
-  TareScale(1);
-  ClearAndReadChar(0);  //user indicating calibration weight is on scale
+  ClearAndReadCharBlocking(0);  //user indicating scale is ready for tare
+  TareScale();
+  ClearAndReadCharBlocking(0);  //user indicating calibration weight is on scale
   long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
 
   float weightOnScale = atof(ClearAndReadLine(15)); //Convert this string to a float
@@ -423,7 +423,7 @@ void ToggleTimestamp(void)
 
   #else //********************
 
-  setting_timestamp_enable = false;
+  setting_timestamp_enable = TIMESTAMP_ENABLE;
   ClearAndSendDone();
 
   #endif  //********************
@@ -552,7 +552,7 @@ void BaudSetup(void)
   //115200 bps is what we will always be using on the MDU
 
   //Record this new baud rate
-  setting_uart_speed = 115200;
+  setting_uart_speed = UART_SPEED;
 
   //Go to this speed
   Serial.end();
@@ -583,7 +583,7 @@ void ToggleUnits(void)
 
   #else //********************
 
-  setting_units = UNITS_KG;
+  setting_units = UNITS;
   float newFactor = (float)setting_calibration_factor * 2.20462; //Convert the calibration factor from lbs to kg
   setting_calibration_factor = (long)newFactor;
   scale.set_scale(setting_calibration_factor); //Assign this new factor to the scale>
@@ -635,8 +635,7 @@ void DecimalSetup(void)
   //   newDecimalPlaces = 4;
   // }
 
-  newDecimalPlaces = 4;
-  setting_decimal_places = newDecimalPlaces;
+  setting_decimal_places = DECIMAL_PLACES;
   ClearAndSendDone();
 
   #endif  //********************
@@ -665,7 +664,7 @@ void AverageReadingSetup(void)
 
   #else //********************
 
-  setting_average_amount = 5;
+  setting_average_amount = AVERAGE_AMOUNT;
   ClearAndSendDone();
 
   #endif  //********************
@@ -686,7 +685,7 @@ void ToggleLocalTemp(void)
 
   #else //********************
 
-  setting_local_temp_enable = false;
+  setting_local_temp_enable = LOCAL_TEMP_ENABLE;
   ClearAndSendDone();
 
   #endif  //********************
@@ -707,7 +706,7 @@ void ToggleRemoteTemp(void)
 
   #else //********************
 
-  setting_remote_temp_enable = false;
+  setting_remote_temp_enable = REMOTE_TEMP_ENABLE;
   ClearAndSendDone();
 
   #endif  //********************
@@ -729,7 +728,7 @@ void ToggleStatusLED(void)
 
   #else //********************
 
-  setting_status_enable = true;
+  setting_status_enable = STATUS_ENABLE;
   ClearAndSendDone();
 
   #endif  //********************
@@ -750,7 +749,7 @@ void ToggleSerialTrigger(void)
 
   #else //********************
 
-  setting_serial_trigger_enable = true;
+  setting_serial_trigger_enable = SERIAL_TRIGGER_ENABLE;
   ClearAndSendDone();
   
   #endif  //********************
@@ -771,7 +770,7 @@ void ToggleRawReading(void)
 
   #else //********************
 
-  setting_raw_reading_enable = false;
+  setting_raw_reading_enable = RAW_READING_ENABLE;
   ClearAndSendDone();
 
   #endif  //********************
@@ -781,11 +780,11 @@ void SetTriggerCharacter(void)
 {
   #ifdef USING_USB  //********************
 
-  setting_trigger_character = ClearAndReadChar(1);
+  setting_trigger_character = ClearAndReadCharBlocking(1);
 
   #else //********************
 
-  setting_trigger_character = '!'
+  setting_trigger_character = TRIGGER_CHAR;
   ClearAndSendDone();
 
   #endif  //********************
