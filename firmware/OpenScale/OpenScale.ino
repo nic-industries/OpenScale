@@ -152,6 +152,9 @@ void setup()
   Wire.begin();
 
   readSystemSettings(); //Load all system settings from EEPROM
+  #ifndef USING_USB
+  InitializeSystem();
+  #endif
 
   //Setup UART
   Serial.begin(setting_uart_speed);
