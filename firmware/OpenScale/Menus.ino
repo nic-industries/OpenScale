@@ -30,19 +30,49 @@ void DisplaySystemHeader(void)
 #ifndef USING_USB
 void InitializeSystem(void)
 {
-  ToggleTimestamp();
-  RateSetup();
-  BaudSetup();
-  ToggleUnits();
-  DecimalSetup();
-  AverageReadingSetup();
-  ToggleLocalTemp();
-  ToggleRemoteTemp();
-  ToggleStatusLED();
-  ToggleSerialTrigger();
-  ToggleRawReading();
-  SetTriggerCharacter();
-  delay(100);
+  //MDU defaults
+  //Reset UART to 115200 bps
+  setting_uart_speed = UART_SPEED;
+
+  //Reset to pounds as our unit of measure
+  setting_units = UNITS;
+
+  //Reset report rate to 2Hz
+  setting_report_rate = REPORT_RATE;
+
+  //Reset calibration factor
+  //setting_calibration_factor = CALIBRATION_FACTOR;
+
+  //Reset tare point
+  //setting_tare_point = TARE_POINT;
+
+  //Reset time stamp
+  setting_timestamp_enable = TIMESTAMP_ENABLE;
+
+  //Reset decimals
+  setting_decimal_places = DECIMAL_PLACES;   
+
+  //Reset average amount
+  setting_average_amount = AVERAGE_AMOUNT;   
+
+  //Reset local temp
+  setting_local_temp_enable = LOCAL_TEMP_ENABLE;
+
+  //Reset remote temp
+  setting_remote_temp_enable = REMOTE_TEMP_ENABLE;
+
+  //Reset LED blinking
+  setting_status_enable = STATUS_ENABLE;
+
+  //Reset serial trigger
+  setting_serial_trigger_enable = SERIAL_TRIGGER_ENABLE;
+
+  //Reset raw reading
+  setting_raw_reading_enable = RAW_READING_ENABLE;
+
+  //Reset trigger character
+  setting_trigger_character = TRIGGER_CHAR;
+
   RecordSystemSettings();
   Serial.flush();
 }
