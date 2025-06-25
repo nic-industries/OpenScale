@@ -63,13 +63,13 @@ void toggleLED()
 void set_default_settings(void)
 {
   //Reset UART to 9600bps
-  setting_uart_speed = 9600;
+  setting_uart_speed = 115200;
 
   //Reset to pounds as our unit of measure
-  setting_units = UNITS_LBS;
+  setting_units = UNITS_KG;
 
-  //Reset report rate to 2Hz
-  setting_report_rate = 500;
+  //Reset report rate to 200
+  setting_report_rate = 200;
 
   //Reset calibration factor
   setting_calibration_factor = 1000;
@@ -78,16 +78,16 @@ void set_default_settings(void)
   setting_tare_point = 0;
 
   //Reset time stamp
-  setting_timestamp_enable = true;
+  setting_timestamp_enable = false;
 
   //Reset decimals
-  setting_decimal_places = 2;
+  setting_decimal_places = 4;
 
   //Reset average amount
-  setting_average_amount = 4;
+  setting_average_amount = 1;
 
   //Reset local temp
-  setting_local_temp_enable = true;
+  setting_local_temp_enable = false;
 
   //Reset remote temp
   setting_remote_temp_enable = false;
@@ -148,7 +148,7 @@ void readSystemSettings(void)
   setting_uart_speed = readBytes(LOCATION_BAUD_MSB, sizeof(setting_uart_speed));
   if (setting_uart_speed < BAUD_MIN || setting_uart_speed > BAUD_MAX)
   {
-    setting_uart_speed = 9600; //Reset UART to 9600 if there is no speed stored
+    setting_uart_speed = 115200; //Reset UART to 115200 if there is no speed stored
     writeBytes(LOCATION_BAUD_MSB, setting_uart_speed, sizeof(setting_uart_speed));
   }
 
@@ -156,7 +156,7 @@ void readSystemSettings(void)
   setting_units = EEPROM.read(LOCATION_MASS_UNITS);
   if (setting_units > 1)
   {
-    setting_units = UNITS_LBS; //Default to lbs
+    setting_units = UNITS_KG; //Default to KG
     EEPROM.write(LOCATION_MASS_UNITS, setting_units);
   }
 
@@ -188,7 +188,7 @@ void readSystemSettings(void)
   setting_timestamp_enable = EEPROM.read(LOCATION_TIMESTAMP_ENABLE);
   if (setting_timestamp_enable > 2)
   {
-    setting_timestamp_enable = true; //Default to true
+    setting_timestamp_enable = false; //Default to false
     EEPROM.write(LOCATION_TIMESTAMP_ENABLE, setting_timestamp_enable);
   }
 
@@ -196,7 +196,7 @@ void readSystemSettings(void)
   setting_decimal_places = EEPROM.read(LOCATION_DECIMAL_PLACES);
   if (setting_decimal_places > 5)
   {
-    setting_decimal_places = 2; //Default to 2
+    setting_decimal_places = 4; //Default to 4
     EEPROM.write(LOCATION_DECIMAL_PLACES, setting_decimal_places);
   }
 
@@ -204,15 +204,16 @@ void readSystemSettings(void)
   setting_average_amount = EEPROM.read(LOCATION_AVERAGE_AMOUNT);
   if (setting_average_amount > 64 || setting_average_amount == 0)
   {
-    setting_average_amount = 4; //Default to 4
+    setting_average_amount = 1; //Default to 1
     EEPROM.write(LOCATION_AVERAGE_AMOUNT, setting_average_amount);
   }
 
+  /*
   //Look up if we are reporting local temperature or not
   setting_local_temp_enable = EEPROM.read(LOCATION_LOCAL_TEMP_ENABLE);
   if (setting_local_temp_enable > 1)
   {
-    setting_local_temp_enable = true; //Default to true
+    setting_local_temp_enable = false; //Default to false
     EEPROM.write(LOCATION_LOCAL_TEMP_ENABLE, setting_local_temp_enable);
   }
 
@@ -223,6 +224,7 @@ void readSystemSettings(void)
     setting_remote_temp_enable = false; //Default to false
     EEPROM.write(LOCATION_REMOTE_TEMP_ENABLE, setting_remote_temp_enable);
   }
+  */
 
   //Look up if we are blinking the status LED
   setting_status_enable = EEPROM.read(LOCATION_STATUS_ENABLE);
@@ -232,6 +234,7 @@ void readSystemSettings(void)
     EEPROM.write(LOCATION_STATUS_ENABLE, setting_status_enable);
   }
 
+  /*
   //Look up if we do a reading when a serial character is received
   setting_serial_trigger_enable = EEPROM.read(LOCATION_SERIAL_TRIGGER_ENABLE);
   if (setting_serial_trigger_enable > 1)
@@ -255,6 +258,7 @@ void readSystemSettings(void)
     setting_trigger_character = '!'; //Default to !
     EEPROM.write(LOCATION_TRIGGER_CHARACTER, setting_trigger_character);
   }
+  */
 
 }
 

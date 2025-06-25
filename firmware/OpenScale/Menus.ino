@@ -4,8 +4,11 @@
 
 //We use this at startup and for the configuration menu
 //Saves us a few dozen bytes
+
 void displaySystemHeader(void)
 {
+  Serial.println(F("\r\nNIC Prismatic Powders MDU"));
+  /*
   Serial.print(F("\r\nSerial Load Cell Converter version "));
   Serial.println(F(FIRMWARE_VERSION));
   Serial.println(F("By SparkFun Electronics"));
@@ -21,7 +24,9 @@ void displaySystemHeader(void)
     remoteSensorAttached = true;
     Serial.println(F("Remote temperature sensor detected"));
   }
+  */
 }
+
 
 //Configure how OpenScale operates
 void system_setup(void)
@@ -40,6 +45,7 @@ void system_setup(void)
     Serial.print(setting_calibration_factor);
     Serial.println(F("]"));
 
+    /*
     Serial.print(F("3) Timestamp [O"));
     if (setting_timestamp_enable == true) Serial.print(F("n"));
     else Serial.print(F("ff"));
@@ -48,11 +54,13 @@ void system_setup(void)
     Serial.print(F("4) Set report rate ["));
     Serial.print(setting_report_rate);
     Serial.println(F("]"));
+    */
 
     Serial.print(F("5) Set baud rate ["));
     Serial.print(setting_uart_speed);
     Serial.println(F(" bps]"));
 
+    /*
     Serial.print(F("6) Change units of measure ["));
     if (setting_units == UNITS_KG) Serial.print(F("kg"));
     if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
@@ -96,7 +104,7 @@ void system_setup(void)
     Serial.print(F(" / '"));
     Serial.write(setting_trigger_character);
     Serial.println(F("']"));
-
+    */
 
     Serial.println(F("x) Exit"));
     Serial.print(F(">"));
@@ -121,6 +129,8 @@ void system_setup(void)
     {
       calibrate_scale();
     }
+
+    /*
     else if (command == '3')
     {
       Serial.print(F("\n\rTimestamp o"));
@@ -140,10 +150,14 @@ void system_setup(void)
     {
       rate_setup();
     }
+    */
+
     else if (command == '5')
     {
       baud_setup();
     }
+
+    /*
     else if (command == '6')
     {
       Serial.print(F("\n\rUnits set to "));
@@ -265,6 +279,8 @@ void system_setup(void)
 
       record_system_settings();
     }
+    */
+
     else if (command == 'x')
     {
       //Do nothing, just exit
@@ -371,6 +387,7 @@ void average_reading_setup(void)
     Serial.println(F("Error: Out of bounds"));
 }
 
+/*
 //Configure how many decimals to show
 void decimal_setup(void)
 {
@@ -395,6 +412,7 @@ void decimal_setup(void)
   else
     Serial.println(F("Error: Out of bounds"));
 }
+*/
 
 //Configure what baud rate to communicate at
 void baud_setup(void)
@@ -441,6 +459,7 @@ void baud_setup(void)
   }
 }
 
+/*
 //Allow user to input the time between readings
 void rate_setup(void)
 {
@@ -481,6 +500,7 @@ void rate_setup(void)
   else
     Serial.println(F("Error: Out of bounds"));
 }
+*/
 
 //Determine how much time we need between measurements
 //Takes into account current baud rate
@@ -505,8 +525,9 @@ int calcMinimumReadTime(void)
   //Calculate number of characters per report
   int characters = 0;
 
-  if (setting_timestamp_enable == true) characters += strlen("51588595,"); //Timestamp has characters
+  //if (setting_timestamp_enable == true) characters += strlen("51588595,"); //Timestamp has characters
 
+  /*
   if (setting_local_temp_enable)
   {
     //Establish how much time it takes to do a local temp read
@@ -530,14 +551,16 @@ int calcMinimumReadTime(void)
 
     characters += strlen("27.81,"); //Add the time it takes to print the characters as well
   }
+  */
 
   characters += strlen("123,"); //Basic weight without decimals
 
   if (setting_decimal_places > 0) characters += setting_decimal_places + 1; //For example 4: 3 decimal places and the '.'
 
-  if (setting_units == UNITS_LBS) characters += strlen("lbs");
+  //if (setting_units == UNITS_LBS) characters += strlen("lbs");
   if (setting_units == UNITS_KG) characters += strlen("kg");
 
+  /*
   if (setting_raw_reading_enable == true)
   {
     long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
@@ -550,6 +573,7 @@ int calcMinimumReadTime(void)
 
     characters += strlen("8355808");
   }
+  */
 
   //Serial.print("characterTime: ");
   //Serial.println(ceil((float)characters * characterTime));

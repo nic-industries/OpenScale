@@ -1,67 +1,26 @@
 /*
-  OpenScale: A serial interface for reading and configuring load cells.
-  By: Nathan Seidle
-  SparkFun Electronics
-  Date: November 24th, 2014
-  License: This code is public domain but you buy me a beer if you use this and we meet someday (Beerware license).
-
-  This example code uses bogde's excellent library: https://github.com/bogde/HX711
-  SparkFun spends a lot of time and energy building open source hardware and writing public domain code.
-  Please consider supporting SparkFun by buying a product or kit.
-
-  OpenScale is a simple board that allows a user to read and configure all types of load cells.
-  It relies on the HX711 load cell amplifier.
-
-  How to use:
-  1) Wire your load cell to the board using the 4-pin connection (E+/-, A+/-) or the RJ45 connection.
-  2) Attach board to USB and open terminal at 9600bps
-  3) Press x to bring up settings menu
-  4) Select units LBS/KG
-  5) Tare the scale with no weight on the scale
-  6) Calibrate the scale: Remove any weight, start calibration routine, place weight on scale, type
-  in the weight placed on the scale.
-  7) Press x and test your scale
-
-  OpenScale ships with an Arduino/Optiboot 115200bps serial bootloader running at 16MHz so you can load new firmware
-  with a simple serial connection. Select 'Arduino Uno' under the boards menu to reprogram the board.
-
-  OpenScale runs at 9600bps by default. This is configurable to 1200, 2400, 4800, 9600, 19200, 38400, 57600, and 115200bps.
-
-  After power up OpenScale will try reading the load cell and output a weight value.
-
-  If you get OpenScale stuck into an unknown baudrate, there is a safety mechanism built-in. Tie the RX pin
-  to ground and power up OpenScale. You should see the status LED blink at 1Hz for 2 seconds.
-  Now power down OpenScale and remove the RX/GND jumper. OpenScale is now reset to 9600bps.
-
-  To change the baud rate type 'x' to bring up configuration menu. Select the baud rate sub menu and enter
-  the baud rate of your choice. You will then see a message for example 'Going to 9600bps...'.
-  You will need to power down OpenScale, change your system UART settings to match the new OpenScale
-  baud rate and then power OpenScale back up.
-
-  STAT LED / D13 - toggles after each report
-
-  If you're using this firmware with the HX711 breakout and an Uno here are the pins to hook up:
-  Arduino pin 2 -> HX711 CLK
-  3 -> DAT
-  5V -> VCC
-  GND -> GND
-
-  Firmware versions:
-  v1.0 - Original release
-  v1.1 - Added trigger character
-  v1.2 - 
-  * Cleaned up white space and split to tabs for easier function finding
-  * Changed the input method of many menu settings from the tedious +/- method
-  to text enter. Now you can calibrate your system by typing in '0.5762' and OpenScale
-  will figure out all the calibration factors.
-  * Fixed a bug with the EEPROM defaulting to the wrong values
+These edits to the OpenScale code are Josiah Hearne's suggestions for the Prismatic MDUs
+In other iterations, many options are presented. This code is made to remove all excess options
+In previous MDU code options, made for the FX MDUs, the OpenScale board didn't communicate well with the computer
+There is no reason for settings to differe whether it is plugged in the USB or not. In fact, seeing as this iteration works witrh an PLC
+It will be easier to upload this code via computer as well as do any monitering necessary from a computer.
+This code removes temperature options, the options to change averages, decimals, timestamps and raw info (etc.)
 */
+
+
+
+
+
+
+
+
+
 
 #include "HX711.h" //Original Repository Created by Bodge https://github.com/bogde/HX711
 #include "openscale.h" //Contains EPPROM locations for settings
-#include <Wire.h> //Needed to talk to on board TMP102 temp sensor
+//#include <Wire.h> //Needed to talk to on board TMP102 temp sensor
 #include <EEPROM.h> //Needed to record user settings
-#include <OneWire.h> //Needed to read DS18B20 temp sensors
+//#include <OneWire.h> //Needed to read DS18B20 temp sensors
 
 #include <avr/sleep.h> //Needed for sleep_mode
 #include <avr/power.h> //Needed for powering down perihperals such as the ADC/TWI and Timers
@@ -94,9 +53,11 @@ const byte statusLED = 13;  //Flashes with each reading
 
 HX711 scale; //Setup interface to scale
 
+/*
 OneWire remoteSensor(4);  //Setup reading one wire temp sensor on pin 4 (a 4.7K resistor is necessary)
 byte remoteSensorAddress[8];
 boolean remoteSensorAttached = false;
+*/
 
 void setup()
 {
@@ -123,13 +84,13 @@ void setup()
   //for(int x = 0 ; x < 30 ; x++)
   //  EEPROM.write(x, 0xFF);
 
-  Wire.begin();
+  //Wire.begin();
 
   readSystemSettings(); //Load all system settings from EEPROM
 
   //Setup UART
   Serial.begin(setting_uart_speed);
-  displaySystemHeader(); //Product title and firmware version
+  //displaySystemHeader(); //Product title and firmware version
 
   checkEmergencyReset(); //Look to see if the RX pin is being pulled low
 
@@ -142,7 +103,8 @@ void setup()
   Serial.println(minTime);
 
   //Look for a special case where the report rate time is less than the allowed minimum
-  if (setting_report_rate < minTime) setting_report_rate = minTime;
+  //if (setting_report_rate < minTime) setting_report_rate = minTime;
+  setting_report_rate = minTime;   //We want this running as quickly as possible
 
   Serial.print(F("Press "));
   Serial.print((char)escape_character);
@@ -162,11 +124,13 @@ void loop()
   float currentReading = scale.get_units(setting_average_amount);
 
   //Print time stamp
+  /*
   if (setting_timestamp_enable == true)
   {
     Serial.print(startTime);
     Serial.print(F(","));
   }
+  */
 
   //Print calibrated reading
   Serial.print(currentReading, setting_decimal_places);
@@ -175,6 +139,7 @@ void loop()
   if (setting_units == UNITS_KG) Serial.print(F("kg"));
   Serial.print(F(","));
 
+  /*
   //Print raw reading
   if (setting_raw_reading_enable == true)
   {
@@ -207,9 +172,10 @@ void loop()
 
   if (setting_status_enable == true) toggleLED();
 
+  */
   Serial.println();
   Serial.flush();
-
+  
   //Hang out until the end of this report period
   while (1)
   {
@@ -231,6 +197,7 @@ void loop()
     if ((millis() - startTime) >= setting_report_rate) break;
   }
 
+  /*
   //If we are serially triggered then wait for incoming character
   if (setupMode == false && setting_serial_trigger_enable == true)
   {
@@ -261,6 +228,7 @@ void loop()
       if (incoming == escape_character) setupMode = true;
     }
   }
+  */
 
   //If the user has pressed x go into system setup
   if (setupMode == true)
