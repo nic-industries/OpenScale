@@ -304,7 +304,7 @@ void calibrate_scale(void)
   Serial.print(F("Tare: "));
   Serial.println(setting_tare_point);
 
-  long rawReading = scale.read_average(setting_average_amount); //Take average reading over a given number of times
+  long rawReading = scale.read_average(10); //Take average reading over a given number of times
   Serial.print(F("Raw: "));
   Serial.println(rawReading);
 
