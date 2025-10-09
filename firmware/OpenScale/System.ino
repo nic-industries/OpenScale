@@ -84,7 +84,7 @@ void set_default_settings(void)
   setting_decimal_places = 4;
 
   //Reset average amount
-  setting_average_amount = 1;
+  setting_average_amount = 5;
 
   //Reset local temp
   setting_local_temp_enable = false;
@@ -204,7 +204,7 @@ void readSystemSettings(void)
   setting_average_amount = EEPROM.read(LOCATION_AVERAGE_AMOUNT);
   if (setting_average_amount > 64 || setting_average_amount == 0)
   {
-    setting_average_amount = 1; //Default to 1
+    setting_average_amount = 5; //Default to 1
     EEPROM.write(LOCATION_AVERAGE_AMOUNT, setting_average_amount);
   }
 

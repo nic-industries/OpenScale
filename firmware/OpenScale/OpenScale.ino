@@ -135,9 +135,9 @@ void loop()
   //Print calibrated reading
   Serial.print(currentReading, setting_decimal_places);
   Serial.print(F(","));
-  if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
-  if (setting_units == UNITS_KG) Serial.print(F("kg"));
-  Serial.print(F(","));
+  // if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
+  // if (setting_units == UNITS_KG) Serial.print(F("kg"));
+  // Serial.print(F(","));
 
   /*
   //Print raw reading
@@ -169,10 +169,10 @@ void loop()
       Serial.print(F("0,")); //There is no sensor to check
     }
   }
+  */
 
   if (setting_status_enable == true) toggleLED();
 
-  */
   Serial.println();
   Serial.flush();
   

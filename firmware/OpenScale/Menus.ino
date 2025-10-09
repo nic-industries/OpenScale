@@ -83,12 +83,14 @@ void system_setup(void)
     if (setting_remote_temp_enable == true) Serial.print(F("n"));
     else Serial.print(F("ff"));
     Serial.println(F("]"));
+    */
 
     Serial.print(F("s) Status LED ["));
     if (setting_status_enable == true) Serial.print(F("Blink"));
     else Serial.print(F("Off"));
     Serial.println(F("]"));
 
+    /*
     Serial.print(F("q) Raw reading [O"));
     if (setting_raw_reading_enable == true) Serial.print(F("n"));
     else Serial.print(F("ff"));
@@ -291,15 +293,40 @@ void system_setup(void)
   }
 }
 
+void tare_scale(void)
+{
+  Serial.print(F("\n\rGetting Tare point: "));
+  scale.tare(); //Reset the scale to 0
+  setting_tare_point = scale.read_average(10); //Get 10 readings from the HX711 and average them
+  Serial.println(setting_tare_point);
+
+  record_system_settings();
+}
+
 //Gives user the ability to set a known weight on the scale and calculate a calibration factor
 void calibrate_scale(void)
 {
   Serial.println();
   Serial.println();
   Serial.println(F("Scale calibration"));
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
+  Serial.println(F("Remove all objects from the scale. Press a key when the scale is clear."));
+
+  while (Serial.available() == false) ; //Wait for user to press key
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
+  tare_scale();
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
+
   Serial.println(F("Place known weight on scale. Press a key when weight is in place and stable."));
 
   while (Serial.available() == false) ; //Wait for user to press key
+
+  while (Serial.available()) Serial.read(); //Clear anything in RX buffer
 
   Serial.print(F("Tare: "));
   Serial.println(setting_tare_point);
@@ -309,7 +336,7 @@ void calibrate_scale(void)
   Serial.println(rawReading);
 
   Serial.print(F("Current Reading: "));
-  Serial.print(scale.get_units(setting_average_amount), 4); //Show 4 decimals during calibration
+  Serial.print(scale.get_units(setting_average_amount), setting_decimal_places); //Show 4 decimals during calibration
   if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
   if (setting_units == UNITS_KG) Serial.print(F("kg"));
   Serial.println();
@@ -355,7 +382,7 @@ void calibrate_scale(void)
   record_system_settings();
 
   Serial.print(F("New Scale Reading: "));
-  Serial.print(scale.get_units(setting_average_amount), 4); //Show 4 decimals during calibration
+  Serial.print(scale.get_units(setting_average_amount), setting_decimal_places); //Show 4 decimals during calibration
   Serial.print(F(" "));
   if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
   if (setting_units == UNITS_KG) Serial.print(F("kg"));
