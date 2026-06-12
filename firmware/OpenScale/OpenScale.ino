@@ -1,6 +1,6 @@
 /*
   OpenScale: A serial interface for reading and configuring load cells.
-  By: Nathan Seidle
+  By: Olivia Smith
   SparkFun Electronics
   Date: November 24th, 2014
   License: This code is public domain but you buy me a beer if you use this and we meet someday (Beerware license).
@@ -65,6 +65,8 @@
 
 #include <avr/sleep.h> //Needed for sleep_mode
 #include <avr/power.h> //Needed for powering down perihperals such as the ADC/TWI and Timers
+
+#include "globals.h"
 
 #define FIRMWARE_VERSION "1.2"
 
