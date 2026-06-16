@@ -66,12 +66,13 @@
 #include <avr/sleep.h> //Needed for sleep_mode
 #include <avr/power.h> //Needed for powering down perihperals such as the ADC/TWI and Timers
 
-#include "globals.h"
+#include "globals.h" //Contains global variables and definitions
 
 #define FIRMWARE_VERSION "1.2"
 
 //Global variables
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#ifdef USING_USB //When using the USB connection instead of the TTL
 long setting_uart_speed; //This is the baud rate that the system runs at, default is 9600. Can be 1,200 to 1,000,000
 byte setting_units; //Lbs or kg?
 unsigned int setting_report_rate;
