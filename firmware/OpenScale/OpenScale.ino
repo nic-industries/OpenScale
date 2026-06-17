@@ -15,12 +15,12 @@
   How to use:
   1) Wire your load cell to the board using the 4-pin connection (E+/-, A+/-) or the RJ45 connection.
   2) Attach board to USB and open terminal at 9600bps
-  3) Press x to bring up settings menu
-  4) Select units LBS/KG
+  3) Press m to bring up settings menu
+  4) Select units G/KG
   5) Tare the scale with no weight on the scale
   6) Calibrate the scale: Remove any weight, start calibration routine, place weight on scale, type
   in the weight placed on the scale.
-  7) Press x and test your scale
+  7) Press m and test your scale
 
   OpenScale ships with an Arduino/Optiboot 115200bps serial bootloader running at 16MHz so you can load new firmware
   with a simple serial connection. Select 'Arduino Uno' under the boards menu to reprogram the board.
@@ -33,7 +33,7 @@
   to ground and power up OpenScale. You should see the status LED blink at 1Hz for 2 seconds.
   Now power down OpenScale and remove the RX/GND jumper. OpenScale is now reset to 9600bps.
 
-  To change the baud rate type 'x' to bring up configuration menu. Select the baud rate sub menu and enter
+  To change the baud rate type 'm' to bring up configuration menu. Select the baud rate sub menu and enter
   the baud rate of your choice. You will then see a message for example 'Going to 9600bps...'.
   You will need to power down OpenScale, change your system UART settings to match the new OpenScale
   baud rate and then power OpenScale back up.
@@ -56,7 +56,7 @@
   will figure out all the calibration factors.
   * Fixed a bug with the EEPROM defaulting to the wrong values
 */
-
+// LIBRARIES
 #include "HX711.h" //Original Repository Created by Bodge https://github.com/bogde/HX711
 #include "openscale.h" //Contains EPPROM locations for settings
 #include <Wire.h> //Needed to talk to on board TMP102 temp sensor
@@ -72,24 +72,24 @@
 
 //Global variables
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#ifdef USING_USB //When using the USB connection instead of the TTL
+//#ifdef USING_USB //When using the USB connection instead of the TTL
 long setting_uart_speed; //This is the baud rate that the system runs at, default is 9600. Can be 1,200 to 1,000,000
-byte setting_units; //Lbs or kg?
+byte setting_units; //g or kg?
 unsigned int setting_report_rate;
-long setting_calibration_factor; //Value used to convert the load cell reading to lbs or kg
+long setting_calibration_factor; //Value used to convert the load cell reading to g or kg
 long setting_tare_point; //Zero value that is found when scale is tared
-boolean setting_timestamp_enable; //Prints the number of miliseconds since boot next to weight reading
+uint8_t setting_timestamp_enable; //Prints the number of miliseconds since boot next to weight reading
 byte setting_decimal_places; //How many decimals to display
 byte setting_average_amount; //How many readings to take before reporting reading
-byte setting_local_temp_enable; //Prints the local temperature in C
-byte setting_remote_temp_enable; //Prints the remote temperature in C
+//byte setting_local_temp_enable; //Prints the local temperature in C
+//byte setting_remote_temp_enable; //Prints the remote temperature in C
 byte setting_status_enable; //Turns on/off the blinking status LED
 byte setting_serial_trigger_enable; //Takes reading when serial character is received
 byte setting_raw_reading_enable; //Prints the raw, 24bit, long from the HX711, ex: 8355808
 byte setting_trigger_character; //The character that will cause OpenScale to report a reading
-boolean setupMode = false; //This is set to true if user presses x
+boolean setupMode = false; //This is set to true if user presses m
 
-const byte escape_character = 'x'; //This is the ASCII character we look for to break reporting
+const byte escape_character = 'm'; //This is the ASCII character we look for to break reporting
 const int minimum_powercycle_time = 500; //Anything less than 500 can cause reading problems
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -174,7 +174,7 @@ void loop()
   //Print calibrated reading
   Serial.print(currentReading, setting_decimal_places);
   Serial.print(F(","));
-  if (setting_units == UNITS_LBS) Serial.print(F("lbs"));
+  if (setting_units == UNITS_G) Serial.print(F("g"));
   if (setting_units == UNITS_KG) Serial.print(F("kg"));
   Serial.print(F(","));
 
@@ -244,8 +244,8 @@ void loop()
 
     char incoming = 0;
 
-    //Wait for a trigger character or x from user
-    while (incoming != setting_trigger_character && incoming != 'x')
+    //Wait for a trigger character or m from user
+    while (incoming != setting_trigger_character && incoming != 'm')
     {
       while (Serial.available() == false) {
 
@@ -265,7 +265,7 @@ void loop()
     }
   }
 
-  //If the user has pressed x go into system setup
+  //If the user has pressed m go into system setup
   if (setupMode == true)
   {
     system_setup();

@@ -65,8 +65,8 @@ void set_default_settings(void)
   //Reset UART to 9600bps
   setting_uart_speed = 9600;
 
-  //Reset to pounds as our unit of measure
-  setting_units = UNITS_LBS;
+  //Reset to grams as our unit of measure
+  setting_units = UNITS_G;
 
   //Reset report rate to 2Hz
   setting_report_rate = 500;
@@ -87,10 +87,10 @@ void set_default_settings(void)
   setting_average_amount = 4;
 
   //Reset local temp
-  setting_local_temp_enable = true;
+  //setting_local_temp_enable = true;
 
   //Reset remote temp
-  setting_remote_temp_enable = false;
+  //setting_remote_temp_enable = false;
 
   //Reset LED blinking
   setting_status_enable = true;
@@ -127,9 +127,9 @@ void record_system_settings(void)
 
   EEPROM.write(LOCATION_AVERAGE_AMOUNT, setting_average_amount);
 
-  EEPROM.write(LOCATION_LOCAL_TEMP_ENABLE, setting_local_temp_enable);
+  //EEPROM.write(LOCATION_LOCAL_TEMP_ENABLE, setting_local_temp_enable);
 
-  EEPROM.write(LOCATION_REMOTE_TEMP_ENABLE, setting_remote_temp_enable);
+  //EEPROM.write(LOCATION_REMOTE_TEMP_ENABLE, setting_remote_temp_enable);
 
   EEPROM.write(LOCATION_STATUS_ENABLE, setting_status_enable);
 
@@ -156,7 +156,7 @@ void readSystemSettings(void)
   setting_units = EEPROM.read(LOCATION_MASS_UNITS);
   if (setting_units > 1)
   {
-    setting_units = UNITS_LBS; //Default to lbs
+    setting_units = UNITS_G; //Default to g
     EEPROM.write(LOCATION_MASS_UNITS, setting_units);
   }
 
@@ -209,20 +209,20 @@ void readSystemSettings(void)
   }
 
   //Look up if we are reporting local temperature or not
-  setting_local_temp_enable = EEPROM.read(LOCATION_LOCAL_TEMP_ENABLE);
-  if (setting_local_temp_enable > 1)
-  {
-    setting_local_temp_enable = true; //Default to true
-    EEPROM.write(LOCATION_LOCAL_TEMP_ENABLE, setting_local_temp_enable);
-  }
+  //setting_local_temp_enable = EEPROM.read(LOCATION_LOCAL_TEMP_ENABLE);
+  //if (setting_local_temp_enable > 1)
+ // {
+   // setting_local_temp_enable = true; //Default to true
+    //EEPROM.write(LOCATION_LOCAL_TEMP_ENABLE, setting_local_temp_enable);
+ // }
 
   //Look up if we are reporting remote temperature or not
-  setting_remote_temp_enable = EEPROM.read(LOCATION_REMOTE_TEMP_ENABLE);
-  if (setting_remote_temp_enable > 1)
-  {
-    setting_remote_temp_enable = false; //Default to false
-    EEPROM.write(LOCATION_REMOTE_TEMP_ENABLE, setting_remote_temp_enable);
-  }
+ // setting_remote_temp_enable = EEPROM.read(LOCATION_REMOTE_TEMP_ENABLE);
+  //if (setting_remote_temp_enable > 1)
+ // {
+  //  setting_remote_temp_enable = false; //Default to false
+  //  EEPROM.write(LOCATION_REMOTE_TEMP_ENABLE, setting_remote_temp_enable);
+ // }
 
   //Look up if we are blinking the status LED
   setting_status_enable = EEPROM.read(LOCATION_STATUS_ENABLE);

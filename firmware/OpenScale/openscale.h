@@ -35,4 +35,5 @@
 #define BAUD_MAX  1000000
 
 #define UNITS_KG  0
-#define UNITS_LBS 1
+#define UNITS_G 1
+
