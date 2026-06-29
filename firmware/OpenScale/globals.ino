@@ -82,7 +82,7 @@ void ClearAndSendMenuEnd(void)
   Serial.write("n\n");
 }
 
-void ClearAndSendDone(void)
+void ClearAndSendFinished(void)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();
@@ -90,7 +90,7 @@ void ClearAndSendDone(void)
   Serial.write("d\n");
 }
 
-void ClearAndSendHandshake(void)
+void ClearAndSendHandshaketoPi(void)
 {
   // clear buffer just before prompting user for character entry
   ClearRxBuffer();

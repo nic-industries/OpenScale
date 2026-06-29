@@ -75,24 +75,30 @@
 //#ifdef USING_USB //When using the USB connection instead of the TTL
 long setting_uart_speed; //This is the baud rate that the system runs at, default is 9600. Can be 1,200 to 1,000,000
 byte setting_units; //g or kg?
-unsigned int setting_report_rate;
+unsigned int setting_report_rate; //How fast the data will be displyed
 long setting_calibration_factor; //Value used to convert the load cell reading to g or kg
 long setting_tare_point; //Zero value that is found when scale is tared
 uint8_t setting_timestamp_enable; //Prints the number of miliseconds since boot next to weight reading
 byte setting_decimal_places; //How many decimals to display
 byte setting_average_amount; //How many readings to take before reporting reading
-//byte setting_local_temp_enable; //Prints the local temperature in C
-//byte setting_remote_temp_enable; //Prints the remote temperature in C
+byte setting_local_temp_enable; //Prints the local temperature in C
+byte setting_remote_temp_enable; //Prints the remote temperature in C
 byte setting_status_enable; //Turns on/off the blinking status LED
 byte setting_serial_trigger_enable; //Takes reading when serial character is received
 byte setting_raw_reading_enable; //Prints the raw, 24bit, long from the HX711, ex: 8355808
 byte setting_trigger_character; //The character that will cause OpenScale to report a reading
 boolean setupMode = false; //This is set to true if user presses m
 
-const byte escape_character = 'm'; //This is the ASCII character we look for to break reporting
+const byte escape_character = ESCAPE_CHAR; //This is the ASCII character we look for to break reporting
 const int minimum_powercycle_time = 500; //Anything less than 500 can cause reading problems
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+//Raspberry Pi Handshake Variables
+//--------------------------------------------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------
 const byte statusLED = 13;  //Flashes with each reading
 
 HX711 scale; //Setup interface to scale
@@ -122,6 +128,8 @@ void setup()
   power_adc_disable();
   power_spi_disable();
 
+  bootTime = millis();
+
   //During testing reset everything
   //for(int x = 0 ; x < 30 ; x++)
   //  EEPROM.write(x, 0xFF);
@@ -132,7 +140,7 @@ void setup()
 
   //Setup UART
   Serial.begin(setting_uart_speed);
-  displaySystemHeader(); //Product title and firmware version
+  DisplaySystemHeader(); //Product title and firmware version
 
   checkEmergencyReset(); //Look to see if the RX pin is being pulled low
 
@@ -140,12 +148,14 @@ void setup()
   scale.set_offset(setting_tare_point);
 
   //Calculate the minimum time between reports
-  int minTime = calcMinimumReadTime();
+  int minTime = CalcMinimumReadTime(); 
   Serial.print(F("Minimum time between reports: "));
   Serial.println(minTime);
 
   //Look for a special case where the report rate time is less than the allowed minimum
-  if (setting_report_rate < minTime) setting_report_rate = minTime;
+  //JUST COMMENTED OUT
+  // < minTime) setting_report_rate = minTime;
+  //setting_report_rate = max(setting_report_rate, minTime);
 
   Serial.print(F("Press "));
   Serial.print((char)escape_character);
@@ -158,7 +168,7 @@ void setup()
 
 void loop()
 {
-
+  unsigned long now = millis();
   long startTime = millis();
 
   //Take average of readings with calibration and tare taken into account
@@ -167,7 +177,8 @@ void loop()
   //Print time stamp
   if (setting_timestamp_enable == true)
   {
-    Serial.print(startTime);
+    Serial.print((now-bootTime) / 1000.0, 3);
+    //Serial.print(startTime / 1000.0,3);
     Serial.print(F(","));
   }
 
@@ -234,6 +245,13 @@ void loop()
     if ((millis() - startTime) >= setting_report_rate) break;
   }
 
+  //Serial.print("setupMode    =");
+  //Serial.print(setupMode);
+  //Serial.print(" trigger=");
+  //Serial.println(setting_serial_trigger_enable);
+
+  //Serial.print("TRIGGER MODE: ");
+  //Serial.println(setting_serial_trigger_enable);
   //If we are serially triggered then wait for incoming character
   if (setupMode == false && setting_serial_trigger_enable == true)
   {
@@ -245,27 +263,55 @@ void loop()
     char incoming = 0;
 
     //Wait for a trigger character or m from user
-    while (incoming != setting_trigger_character && incoming != 'm')
+    while (true)//(incoming != setting_trigger_character) // && incoming != 'w')
     {
-      while (Serial.available() == false) {
+      Serial.flush();
+      while (Serial.available() == false) 
+      {
 
         delay(1);
         //We go into deep sleep here. This will save 10-20mA.
-        power_twi_disable();
-        power_timer0_disable(); //Shut down peripherals we don't need
+        //power_twi_disable();
+        //power_timer0_disable(); //Shut down peripherals we don't need
 
         sleep_mode(); //Stop everything and go to sleep. Wake up if serial character received
 
-        power_timer0_enable();
-        power_twi_enable();
+        //power_timer0_enable();
+        //power_twi_enable();
       }
 
-      incoming = Serial.read();
-      if (incoming == escape_character) setupMode = true;
+      char incoming[4] = "q\n\r";
+      int bytesRead = Serial.readBytes(incoming, sizeof(incoming));
+      
+      // Serial.print("Received ASCII: ");
+      // Serial.println(incoming[0]);
+
+      if (incoming[0] != ' ' && incoming[0] != '\t' && incoming[0] != '\n' && incoming[0] != '\r')
+      {
+        if (incoming[0] == ESCAPE_CHAR) 
+        {
+          // Serial.println("escape character detected!");
+          setupMode = true;
+          break;
+        }
+        else if (incoming[0] == TRIGGER_CHARACTER)
+        {
+          // Serial.println("trigger character detected!");
+          break;
+        }
+        else
+        {
+          // Serial.println("no known character detected...");
+        }
+      }
+      else
+      {
+        Serial.flush();
+      }
     }
   }
 
-  //If the user has pressed m go into system setup
+    //If the user has pressed m go into system setup
   if (setupMode == true)
   {
     system_setup();

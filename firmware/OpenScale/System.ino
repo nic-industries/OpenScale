@@ -1,6 +1,7 @@
 /*
  These are lower level system functions
 */
+#include "globals.h"
 
 //Check to see if we need an emergency UART reset
 //Scan the RX pin for 2 seconds
@@ -96,13 +97,13 @@ void set_default_settings(void)
   setting_status_enable = true;
 
   //Reset serial trigger
-  setting_serial_trigger_enable = false;
+  setting_serial_trigger_enable = SERIAL_TRIGGER_ENABLE;
 
   //Reset raw reading
   setting_raw_reading_enable = false;
 
   //Reset trigger character
-  setting_trigger_character = '!';
+  setting_trigger_character = TRIGGER_CHARACTER;
 
   //Commit these new settings to memory
   record_system_settings();
@@ -164,7 +165,7 @@ void readSystemSettings(void)
   setting_report_rate = readBytes(LOCATION_REPORT_RATE_MSB, sizeof(setting_report_rate));
   if (setting_report_rate == 0xFFFF)
   {
-    setting_report_rate = 200; //Default to 200ms
+    setting_report_rate = 500; //Default to 200ms
     writeBytes(LOCATION_REPORT_RATE_MSB, setting_report_rate, sizeof(setting_report_rate));
   }
 
@@ -233,10 +234,10 @@ void readSystemSettings(void)
   }
 
   //Look up if we do a reading when a serial character is received
-  setting_serial_trigger_enable = EEPROM.read(LOCATION_SERIAL_TRIGGER_ENABLE);
+  setting_serial_trigger_enable = SERIAL_TRIGGER_ENABLE; //EEPROM.read(LOCATION_SERIAL_TRIGGER_ENABLE);
   if (setting_serial_trigger_enable > 1)
   {
-    setting_serial_trigger_enable = false; //Default to false
+    setting_serial_trigger_enable = SERIAL_TRIGGER_ENABLE; //Default to global constant
     EEPROM.write(LOCATION_SERIAL_TRIGGER_ENABLE, setting_serial_trigger_enable);
   }
 
@@ -252,7 +253,7 @@ void readSystemSettings(void)
   setting_trigger_character = EEPROM.read(LOCATION_TRIGGER_CHARACTER);
   if (setting_trigger_character == 255)
   {
-    setting_trigger_character = '!'; //Default to !
+    setting_trigger_character = TRIGGER_CHARACTER; //Default to w
     EEPROM.write(LOCATION_TRIGGER_CHARACTER, setting_trigger_character);
   }
 
